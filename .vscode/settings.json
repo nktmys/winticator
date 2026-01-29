@@ -1,0 +1,24 @@
+{
+    "terminal.integrated.detectLocale": "off",
+    "go.toolsManagement.checkForUpdates": "local",
+    "go.useLanguageServer": true,
+    "go.alternateTools": {
+        "go-langserver": "gopls"
+    },
+    "editor.formatOnSave": false,
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "always"
+        }
+    },
+    "gopls": {
+        "ui.diagnostic.staticcheck": true,
+        "ui.diagnostic.analyses":{
+            "ST1000": false,
+        },
+        "ui.codelenses": {
+            "run_vulncheck_exp": true
+        }
+    }
+}

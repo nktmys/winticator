@@ -1,0 +1,17 @@
+# Refer: https://trivy.dev/docs/latest/guide/configuration/filtering/
+
+misconfigurations:
+  - id: AVD-DS-0026
+    paths:
+      - '.devcontainer/Dockerfile'
+    statement: 'Accept for debug environment Dockerfile'
+
+secrets:
+  - id: github-pat
+    paths:
+      - '.secrets/*'
+    statement: 'Accept for debug environment'
+
+licenses:
+  - id: WTFPL
+    statement: 'Accept for github.com/robotn/xgbutil'

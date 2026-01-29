@@ -1,0 +1,7 @@
+Website = "https://github.com/nktmys/winticator/"
+
+[Details]
+Icon = "./assets/icons/appicon.png"
+Name = "Winticator"
+ID = "com.winticator.app"
+Version = "0.0.1"

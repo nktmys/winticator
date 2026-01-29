@@ -1,0 +1,52 @@
+name: Test Go Code
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install Fyne dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libgl1-mesa-dev xorg-dev libxkbcommon-dev
+
+      - name: Cache Go tools
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/bin/govulncheck
+            /usr/local/bin/staticcheck
+          key: ${{ runner.os }}-go-tools-${{ hashFiles('**/go.mod') }}
+
+      - name: Install go tools
+        run: |
+          if ! command -v govulncheck &> /dev/null; then
+            go install golang.org/x/vuln/cmd/govulncheck@latest
+          fi
+          if ! command -v staticcheck &> /dev/null; then
+            go install honnef.co/go/tools/cmd/staticcheck@latest
+          fi
+        env:
+          GOBIN: /usr/local/bin
+
+      - run: go mod download
+
+      - name: Run Static Analysis
+        run: |
+          staticcheck ./...
+          govulncheck ./...
+
+      - name: Run Tests
+        run: |
+          go test ./... -failfast -coverprofile=coverage.out

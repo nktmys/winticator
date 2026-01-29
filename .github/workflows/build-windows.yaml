@@ -1,0 +1,57 @@
+name: Build for Windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ARCHIVE_NAME: winticator-windows.zip
+
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          path-type: inherit
+          update: true
+          install: >-
+            zip
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install Fyne Dependencies
+        run: >
+          pacman -Syu &&
+          pacman --noconfirm -S git mingw-w64-x86_64-toolchain mingw-w64-x86_64-go
+
+      - name: Install fyne tool
+        run: go install fyne.io/tools/cmd/fyne@latest
+
+      - name: Build
+        run: fyne package -os windows -src=./src -release
+
+      - name: Archive
+        run: zip -j ${{ env.ARCHIVE_NAME }} ./src/Winticator.exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: ${{ env.ARCHIVE_NAME }}
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload ${{ github.ref_name }} ${{ env.ARCHIVE_NAME }}

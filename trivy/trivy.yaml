@@ -1,0 +1,37 @@
+# Refer: https://trivy.dev/docs/latest/guide/references/configuration/config-file/
+
+# 脆弱性診断ツール trivy
+# Run Command:
+#   trivy fs --config trivy/trivy.yaml --severity=UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL ./
+# Refer:
+#   https://github.com/aquasecurity/trivy
+
+# 脆弱性診断ツール GO公式
+# Run Command:
+#   govulncheck ./...
+# Refer:
+#   https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck
+
+cache:
+  dir: .cache/trivy
+
+ignorefile: trivy/.trivyignore.yaml
+
+exit-code: 1
+
+severity:
+  # - UNKNOWN
+  # - LOW
+  # - MEDIUM
+  - HIGH
+  - CRITICAL
+
+scan:
+  scanners:
+    - vuln
+    - misconfig
+    - secret
+    - license
+
+db:
+  no-progress: true

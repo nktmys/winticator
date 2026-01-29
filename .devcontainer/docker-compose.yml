@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  winticator:
+    container_name: winticator
+    build:
+      context: .
+    tty: true
+    stdin_open: true
+    working_dir: /app
+    environment:
+      - CLAUDE_CONFIG_DIR=/home/develop/.claude
+    volumes:
+      - develop_claude_volume:/home/develop/.claude
+      - ../:/app
+
+volumes:
+  develop_claude_volume:

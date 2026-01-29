@@ -12,6 +12,7 @@
 *.test
 
 # Code coverage profiles and other test artifacts
+*.bin
 *.out
 coverage.*
 *.coverprofile
@@ -28,5 +29,10 @@ go.work.sum
 .env
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.cache
+.claude
+.idea
+.serena
+.secrets
+.DS_Store
+__debug_bin*

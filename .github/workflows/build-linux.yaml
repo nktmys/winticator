@@ -1,0 +1,47 @@
+name: Build for Linux
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ARCHIVE_NAME: winticator-linux.tar.xz
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Install Fyne dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends libgl1-mesa-dev xorg-dev libxkbcommon-dev
+
+      - name: Install fyne tool
+        run: go install fyne.io/tools/cmd/fyne@latest
+
+      - name: Build
+        run: fyne package -os linux -src=./src -release
+
+      - name: Archive
+        run: mv Winticator.tar.xz ${{ env.ARCHIVE_NAME }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: ${{ env.ARCHIVE_NAME }}
+
+      - name: Upload to Release
+        if: startsWith(github.ref, 'refs/tags/')
+        run: gh release upload ${{ github.ref_name }} ${{ env.ARCHIVE_NAME }}

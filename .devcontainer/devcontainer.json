@@ -1,0 +1,23 @@
+{
+  "name": "winticator",
+  "dockerComposeFile": ["docker-compose.yml"],
+  "service": "winticator",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+  },
+  "workspaceFolder": "/app",
+  "postCreateCommand": "just install && git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "waitFor": "postCreateCommand",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "MS-CEINTL.vscode-language-pack-ja",
+        "golang.Go",
+        "anthropic.claude-code",
+        "esbenp.prettier-vscode",
+        "oderwat.indent-rainbow"
+      ]
+    }
+  }
+}
