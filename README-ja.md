@@ -3,7 +3,8 @@
 # Winticator
 
 [![Go version](https://img.shields.io/github/go-mod/go-version/nktmys/winticator)](https://github.com/nktmys/winticator/blob/main/go.mod)
-[![GitHub release](https://img.shields.io/github/release/nktmys/winticator)](https://github.com/nktmys/winticator/releases)
+[![GitHub release](https://img.shields.io/github/release/nktmys/winticator)](https://github.com/nktmys/winticator/releases/latest)
+[![GitHub all releases](https://img.shields.io/github/downloads/nktmys/winticator/total)](https://github.com/nktmys/winticator/releases) 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/nktmys/winticator/test.yaml?label=go%20test)](https://github.com/nktmys/winticator/actions/workflows/test.yaml)
 
 [English](./README.md) | 日本語
