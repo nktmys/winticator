@@ -116,7 +116,8 @@ func TestDisplayName(t *testing.T) {
 		account  string
 		expected string
 	}{
-		{"Google", "user@gmail.com", "Google"},
+		{"Google", "user@gmail.com", "user@gmail.com"},
+		{"Google", "", "Google"},
 		{"", "user@example.com", "user@example.com"},
 	}
 

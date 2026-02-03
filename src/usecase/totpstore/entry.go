@@ -145,10 +145,10 @@ func (e *Entry) ToOTPAuthURI() string {
 
 // DisplayName は表示用の名前を返す
 func (e *Entry) DisplayName() string {
-	if e.Issuer != "" {
-		return e.Issuer
+	if e.Account != "" {
+		return e.Account
 	}
-	return e.Account
+	return e.Issuer
 }
 
 // TOTP はEntryから現在のTOTPコードを生成する
