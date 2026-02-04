@@ -13,6 +13,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/lang"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/nktmys/winticator/src/assets"
 	"github.com/nktmys/winticator/src/pkg/version"
@@ -20,13 +21,13 @@ import (
 )
 
 const (
-	appLicense   = "Copyright (c) 2026 nktmys."
-	licensesInfo = "MIT License."
+	appLicense  = "Copyright (c) 2026 nktmys."
+	licenseInfo = "MIT License."
 
 	// GitHub URLs
 	githubReleasesAPIURL = "https://api.github.com/repos/nktmys/winticator/releases/latest"
 	downloadPageBaseURL  = "https://github.com/nktmys/winticator/releases/tag"
-	licensesPageURL      = "https://github.com/nktmys/winticator/tree/main/licenses"
+	licensePageURL       = "https://github.com/nktmys/winticator/tree/main/LICENSE"
 )
 
 // createAppInfoTab はアプリ情報タブのUIを構築する
@@ -71,29 +72,24 @@ func (a *App) createAppInfoTab() fyne.CanvasObject {
 	copyrightLabel := widget.NewLabel(appLicense)
 	copyrightLabel.Alignment = fyne.TextAlignCenter
 
+	// ライセンス
+	licenseLabel := widget.NewLabel(lang.L("appinfo.license"))
+	licenseValue := widget.NewLabel(licenseInfo)
+	licenseBtn := widget.NewButtonWithIcon(lang.L("appinfo.viewLicense"), theme.LogoutIcon(), tab.handleLicenseButton)
+	licenseBtn.IconPlacement = widget.ButtonIconTrailingText
+
 	// レイアウト（3列: ラベル、値、ボタン）
 	infoGrid := container.NewGridWithColumns(3,
 		nameLabel, nameValue, layout.NewSpacer(),
 		versionLabel, versionValue, container.NewBorder(nil, nil, nil, checkUpdateBtn),
+		licenseLabel, licenseValue, container.NewBorder(nil, nil, nil, licenseBtn),
 	)
-
-	// ライセンス
-	licensesLabel := widget.NewLabel(lang.L("appinfo.licenses"))
-	licensesValue := widget.NewLabel(licensesInfo)
-	licensesValue.Wrapping = fyne.TextWrapWord
-
-	// ライセンスセクション（ラベルの右端にボタン配置）
-	licensesBtn := widget.NewButton(lang.L("appinfo.viewLicenses"), tab.handleLicensesButton)
-	licensesHeader := container.NewBorder(nil, nil, licensesLabel, licensesBtn)
 
 	// メインコンテンツ（スクロール可能な部分）
 	mainContent := container.NewVBox(
 		container.NewCenter(appIcon),
 		widget.NewSeparator(),
 		infoGrid,
-		widget.NewSeparator(),
-		licensesHeader,
-		licensesValue,
 	)
 
 	// 下部にcopyrightを固定配置
@@ -170,9 +166,9 @@ func (t *appInfoTab) handleCheckUpdateButton() {
 	}()
 }
 
-// handleLicensesButton はライセンス表示ボタンの処理を行う
-func (t *appInfoTab) handleLicensesButton() {
-	t.openURL(licensesPageURL)
+// handleLicenseButton はライセンス表示ボタンの処理を行う
+func (t *appInfoTab) handleLicenseButton() {
+	t.openURL(licensePageURL)
 }
 
 // openURL は指定されたURLを開く

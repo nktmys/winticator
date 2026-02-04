@@ -158,7 +158,7 @@ func (t *settingTab) handleExport() {
 	passwordEntry := widget.NewPasswordEntry()
 	passwordEntry.PlaceHolder = lang.L("setting.export.password")
 
-	dialog.ShowForm(
+	form := dialog.NewForm(
 		lang.L("setting.export.title"),
 		lang.L("dialog.save"),
 		lang.L("dialog.cancel"),
@@ -173,6 +173,8 @@ func (t *settingTab) handleExport() {
 		},
 		t.app.mainWindow,
 	)
+	form.Resize(fyne.NewSize(400, 160))
+	form.Show()
 }
 
 // doExport は実際のエクスポート処理を行う
@@ -263,7 +265,7 @@ func (t *settingTab) handleImport() {
 		passwordEntry := widget.NewPasswordEntry()
 		passwordEntry.PlaceHolder = lang.L("setting.import.password")
 
-		dialog.ShowForm(
+		form := dialog.NewForm(
 			lang.L("setting.import.title"),
 			lang.L("dialog.save"),
 			lang.L("dialog.cancel"),
@@ -278,6 +280,8 @@ func (t *settingTab) handleImport() {
 			},
 			t.app.mainWindow,
 		)
+		form.Resize(fyne.NewSize(400, 160))
+		form.Show()
 	}, t.app.mainWindow)
 
 	openDialog.SetFilter(storage.NewExtensionFileFilter([]string{".wtbackup"}))
