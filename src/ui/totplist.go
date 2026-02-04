@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -12,20 +13,11 @@ import (
 	"fyne.io/fyne/v2/lang"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nktmys/winticator/src/ui/custom"
+	"github.com/nktmys/winticator/src/ui/custom/components"
 	"github.com/nktmys/winticator/src/usecase/qrscanner"
 	"github.com/nktmys/winticator/src/usecase/totpstore"
 )
-
-// totpListView はTOTPリスト画面の状態を保持する
-type totpListView struct {
-	app       *App
-	store     *totpstore.Store
-	list      *widget.List
-	entries   []*totpstore.Entry
-	ticker    *time.Ticker
-	stopChan  chan struct{}
-	container *fyne.Container
-}
 
 // createTOTPListView はTOTPリスト画面を作成する
 func (a *App) createTOTPListView() fyne.CanvasObject {
@@ -33,7 +25,7 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 		app:      a,
 		store:    a.totpStore,
 		entries:  make([]*totpstore.Entry, 0),
-		stopChan: make(chan struct{}),
+		stopChan: make(chan bool),
 	}
 
 	// ストアからエントリを読み込み
@@ -69,39 +61,44 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 	return container.NewPadded(view.container)
 }
 
+// totpListView はTOTPリスト画面の状態を保持する
+type totpListView struct {
+	app       *App
+	store     *totpstore.Store
+	list      *widget.List
+	entries   []*totpstore.Entry
+	ticker    *time.Ticker
+	stopChan  chan bool
+	container *fyne.Container
+}
+
 // createListItem はリストアイテムのテンプレートを作成する
 func (v *totpListView) createListItem() fyne.CanvasObject {
-	issuerLabel := widget.NewLabel("Issuer")
-	issuerLabel.TextStyle = fyne.TextStyle{Bold: true}
+	// 表示名（Account または Issuer）
+	displayNameLabel := widget.NewLabel("DisplayName")
 
-	accountLabel := widget.NewLabel("account@example.com")
-	accountLabel.TextStyle = fyne.TextStyle{}
+	// TOTPコード（青色・大きいフォント・タップ可能）
+	codeText := components.NewTappableText("000 000",
+		custom.ColorPrimaryBlue, 28)
 
-	// コードはボタンとして作成（クリックでコピー）
-	codeButton := widget.NewButton("000 000", nil)
-	codeButton.Importance = widget.LowImportance
+	// 左パディング用のスペーサーを追加（widget.LabelのInnerPaddingに合わせる）
+	codePadding := canvas.NewRectangle(color.Transparent)
+	codePadding.SetMinSize(fyne.NewSize(theme.InnerPadding(), 0))
+	paddedCode := container.NewHBox(codePadding, codeText)
 
-	timerBar := widget.NewProgressBar()
-	timerBar.Min = 0
-	timerBar.Max = 30
+	// 円形プログレス
+	circularProgress := components.NewCircularProgress(32)
 
+	// メニューボタン
 	menuButton := widget.NewButtonWithIcon("", theme.MoreHorizontalIcon(), nil)
 
-	leftContent := container.NewVBox(
-		issuerLabel,
-		accountLabel,
-	)
+	// 左側: 表示名 + コード（パディング付き）
+	leftContent := container.NewVBox(displayNameLabel, paddedCode)
 
-	rightContent := container.NewVBox(
-		codeButton,
-		timerBar,
-	)
+	// 右側: 円形プログレス + メニュー
+	rightContent := container.NewHBox(circularProgress, menuButton)
 
-	return container.NewBorder(
-		nil, nil,
-		leftContent,
-		container.NewHBox(rightContent, menuButton),
-	)
+	return container.NewBorder(nil, nil, leftContent, rightContent)
 }
 
 // updateListItem はリストアイテムを更新する
@@ -115,40 +112,49 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 
 	// 左側のコンテンツを取得
 	leftContent := border.Objects[0].(*fyne.Container)
-	issuerLabel := leftContent.Objects[0].(*widget.Label)
-	accountLabel := leftContent.Objects[1].(*widget.Label)
+	displayNameLabel := leftContent.Objects[0].(*widget.Label)
+	paddedCode := leftContent.Objects[1].(*fyne.Container)
+	codeText := paddedCode.Objects[1].(*components.TappableText)
 
 	// 右側のコンテンツを取得
 	rightBox := border.Objects[1].(*fyne.Container)
-	rightContent := rightBox.Objects[0].(*fyne.Container)
-	codeButton := rightContent.Objects[0].(*widget.Button)
-	timerBar := rightContent.Objects[1].(*widget.ProgressBar)
+	circularProgress := rightBox.Objects[0].(*components.CircularProgress)
 	menuButton := rightBox.Objects[1].(*widget.Button)
 
-	// 値を設定
-	issuerLabel.SetText(entry.DisplayName())
-	accountLabel.SetText(entry.Account)
+	// 表示名を設定
+	displayNameLabel.SetText(entry.DisplayName())
 
 	// TOTPコードを生成
 	code, err := entry.TOTP()
 	if err != nil {
-		codeButton.SetText("------")
+		codeText.SetText("------")
 	} else {
 		// 3桁ごとにスペースを挿入
 		if len(code) == 6 {
 			code = code[:3] + " " + code[3:]
 		}
-		codeButton.SetText(code)
+		codeText.SetText(code)
 	}
 
 	// 残り時間を設定
 	remaining := entry.RemainingSeconds()
-	timerBar.Max = float64(entry.Period)
-	timerBar.SetValue(float64(remaining))
+	circularProgress.Max = float64(entry.Period)
+	circularProgress.SetValue(float64(remaining))
+
+	// 残り5秒未満で赤色に変更
+	if remaining < 5 {
+		warningColor := custom.ColorPrimaryRed
+		codeText.SetColor(warningColor)
+		circularProgress.SetColor(warningColor)
+	} else {
+		normalColor := custom.ColorPrimaryBlue
+		codeText.SetColor(normalColor)
+		circularProgress.SetColor(normalColor)
+	}
 
 	// コードクリックでコピー（entryをキャプチャ）
 	entryCopy := entry
-	codeButton.OnTapped = func() {
+	codeText.OnTapped = func() {
 		v.copyCode(entryCopy)
 	}
 
@@ -176,7 +182,9 @@ func (v *totpListView) startRefresh() {
 		for {
 			select {
 			case <-v.ticker.C:
-				v.list.Refresh()
+				fyne.Do(func() {
+					v.list.Refresh()
+				})
 			case <-v.stopChan:
 				v.ticker.Stop()
 				return
@@ -197,7 +205,7 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 	// コピー完了通知
 	dialog.ShowInformation(
 		lang.L("totp.copied.title"),
-		lang.L("totp.copied.message", M{"issuer": entry.DisplayName()}),
+		lang.L("totp.copied.message", M{"displayName": entry.DisplayName()}),
 		v.app.mainWindow,
 	)
 }
@@ -278,7 +286,6 @@ func (v *totpListView) showQRCode(entry *totpstore.Entry) {
 	content := container.NewVBox(
 		img,
 		widget.NewLabel(entry.DisplayName()),
-		widget.NewLabel(entry.Account),
 	)
 
 	dialog.ShowCustom(
@@ -293,7 +300,7 @@ func (v *totpListView) showQRCode(entry *totpstore.Entry) {
 func (v *totpListView) confirmDelete(entry *totpstore.Entry) {
 	dialog.ShowConfirm(
 		lang.L("totp.delete.title"),
-		lang.L("totp.delete.message", M{"issuer": entry.DisplayName()}),
+		lang.L("totp.delete.message", M{"displayName": entry.DisplayName()}),
 		func(confirmed bool) {
 			if !confirmed {
 				return
