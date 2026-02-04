@@ -27,6 +27,18 @@ Winticator は**技術的な実装方法や可搬性**に重点を置いてお�
 
 ---
 
+## Screenshots
+
+| TOTP List | Settings |
+|:---------:|:--------:|
+| <img src="./images/ss-01-totp-list.png" alt="TOTP List" width="350"> | <img src="./images/ss-02-settings.png" alt="Settings" width="350"> |
+
+| App Info | Export |
+|:--------:|:------:|
+| <img src="./images/ss-03-appinfo.png" alt="App Info" width="350"> | <img src="./images/ss-04-export.png" alt="Export" width="350"> |
+
+---
+
 ## ダウンロード
 
 お使いのプラットフォーム用のバイナリを[リリースページ](https://github.com/nktmys/winticator/releases/latest)からダウンロードできます。
@@ -117,6 +129,6 @@ xattr -r -d com.apple.quarantine /Applications/Winticator.app
 
 ## 注意事項
 
-このプロジェクトは**現状のまま（as is）**提供され、いかなる保証も伴いません。
+このプロジェクトは **現状のまま（as is）** で提供され、いかなる保証も伴いません。
 
 実運用や企業利用を前提としたプロダクションレベルのソリューションをお探しの場合は、公式なサポートを提供している既存の製品・サービスをご検討ください。

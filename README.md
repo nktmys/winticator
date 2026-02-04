@@ -30,6 +30,18 @@ not on product differentiation or commercial use.
 
 ---
 
+## Screenshots
+
+| TOTP List | Settings |
+|:---------:|:--------:|
+| <img src="./images/ss-01-totp-list.png" alt="TOTP List" width="350"> | <img src="./images/ss-02-settings.png" alt="Settings" width="350"> |
+
+| App Info | Export |
+|:--------:|:------:|
+| <img src="./images/ss-03-appinfo.png" alt="App Info" width="350"> | <img src="./images/ss-04-export.png" alt="Export" width="350"> |
+
+---
+
 ## Download
 
 Download binaries for your platform from the [Releases](https://github.com/nktmys/winticator/releases/latest) page.
@@ -123,7 +135,7 @@ Replace `/Applications/Winticator.app` with the actual path where you placed the
 
 ## Notes
 
-This project is provided "as is", without warranty of any kind.
+This project is provided **"as is"**, without warranty of any kind.
 
 If you are looking for a production-grade or enterprise-ready solution,
 please consider established products or services that provide official support.
