@@ -27,6 +27,20 @@ Winticator は**技術的な実装方法や可搬性**に重点を置いてお�
 
 ---
 
+## ダウンロード
+
+お使いのプラットフォーム用のバイナリを[リリースページ](https://github.com/nktmys/winticator/releases/latest)からダウンロードできます。
+
+| プラットフォーム | アーキテクチャ | ファイル |
+|------------------|----------------|----------|
+| Windows | x64 (amd64) | `winticator-windows.zip` |
+| macOS | Apple Silicon (arm64) | `winticator-macos.zip` |
+| Linux | x64 (amd64) | `winticator-linux.tar.xz` |
+
+**他のアーキテクチャのバイナリをご希望の場合は、[issue](https://github.com/nktmys/winticator/issues)でお気軽にご連絡ください。**
+
+---
+
 ## プロジェクトの目的
 
 このプロジェクトの主な目的は以下の通りです：
@@ -80,6 +94,24 @@ Winticator は**独立したプロジェクト**です。
 ライセンス条項に従う限り、商用利用を含め、自由に使用・改変・再配布・組み込むことができます。
 
 詳細は[LICENSE](./LICENSE)ファイルをご参照ください。
+
+---
+
+## トラブルシューティング
+
+### macOS: 「アプリが壊れている」または開けない場合
+
+macOSでアプリを起動しようとした際に、以下のようなエラーメッセージが表示されることがあります：
+- 「"Winticator"は壊れているため開けません」
+- 「開発元を検証できないため"Winticator"を開けません」
+
+これはmacOSのGatekeeper検疫機能によるものです。以下のコマンドをターミナルで実行して解決できます：
+
+```bash
+xattr -r -d com.apple.quarantine /Applications/Winticator.app
+```
+
+`/Applications/Winticator.app`はアプリの実際の配置場所に合わせて変更してください。
 
 ---
 

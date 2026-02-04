@@ -30,6 +30,20 @@ not on product differentiation or commercial use.
 
 ---
 
+## Download
+
+Download binaries for your platform from the [Releases](https://github.com/nktmys/winticator/releases/latest) page.
+
+| Platform | Architecture | File |
+|----------|--------------|------|
+| Windows | x64 (amd64) | `winticator-windows.zip` |
+| macOS | Apple Silicon (arm64) | `winticator-macos.zip` |
+| Linux | x64 (amd64) | `winticator-linux.tar.xz` |
+
+**If you need binaries for other architectures, feel free to open an [issue](https://github.com/nktmys/winticator/issues).**
+
+---
+
 ## Purpose of This Project
 
 The primary purpose of this project is:
@@ -86,6 +100,24 @@ You are free to use, modify, distribute, and incorporate this software,
 including for commercial purposes, under the terms of the license.
 
 See the [LICENSE](./LICENSE) file for details.
+
+---
+
+## Troubleshooting
+
+### macOS: "App is damaged" or cannot be opened
+
+When launching the app on macOS, you may see an error message such as:
+- "Winticator is damaged and can't be opened"
+- "Winticator cannot be opened because the developer cannot be verified"
+
+This is caused by macOS Gatekeeper quarantine. To resolve this, run the following command in Terminal:
+
+```bash
+xattr -r -d com.apple.quarantine /Applications/Winticator.app
+```
+
+Replace `/Applications/Winticator.app` with the actual path where you placed the app.
 
 ---
 
