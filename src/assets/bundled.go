@@ -2,7 +2,7 @@ package assets
 
 import (
 	"embed"
-	"path/filepath"
+	"path"
 
 	"fyne.io/fyne/v2"
 )
@@ -25,7 +25,7 @@ func Resource(path string) fyne.Resource {
 
 // Name はリソースのファイル名を返す
 func (r *resource) Name() string {
-	return filepath.Base(r.path)
+	return path.Base(r.path)
 }
 
 // Content はリソースの内容を返す

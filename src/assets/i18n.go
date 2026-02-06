@@ -3,7 +3,7 @@ package assets
 import (
 	"embed"
 	"encoding/json"
-	"path/filepath"
+	"path"
 	"strings"
 
 	"fyne.io/fyne/v2/lang"
@@ -39,7 +39,7 @@ func AvailableLocales() []Locale {
 
 		// 言語ファイルから言語名を取得
 		name := code
-		localeFile := filepath.Join("locales", fileName)
+		localeFile := path.Join("locales", fileName)
 		if data, err := embeddedLocales.ReadFile(localeFile); err == nil {
 			var translations map[string]string
 			if err := json.Unmarshal(data, &translations); err == nil {
@@ -74,7 +74,7 @@ func InitI18nWithLocale(locale string) error {
 	}
 
 	// 指定されたロケールの翻訳を読み込む
-	localeFile := filepath.Join("locales", locale+".json")
+	localeFile := path.Join("locales", locale+".json")
 	data, err := embeddedLocales.ReadFile(localeFile)
 	if err != nil {
 		return err
