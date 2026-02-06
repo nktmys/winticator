@@ -1,6 +1,8 @@
 {
     "language.name": "English",
     "app.title": "Winticator",
+    "Yes": "Yes",
+    "No": "No",
     "toolbar.totp": "TOTP",
     "toolbar.setting": "Settings",
     "toolbar.info": "Info",
@@ -25,8 +27,6 @@
     "dialog.cancel": "Cancel",
     "dialog.add": "Add",
     "dialog.close": "Close",
-    "dialog.yes": "Yes",
-    "dialog.no": "No",
     "setting.header": "Settings",
     "setting.theme": "Theme:",
     "setting.theme.light": "Light",
