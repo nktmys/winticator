@@ -160,7 +160,7 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 
 	// メニューボタン
 	menuButton.OnTapped = func() {
-		v.showEntryMenu(entryCopy)
+		v.showEntryMenu(entryCopy, menuButton)
 	}
 }
 
@@ -211,7 +211,7 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 }
 
 // showEntryMenu はエントリのメニューを表示する
-func (v *totpListView) showEntryMenu(entry *totpstore.Entry) {
+func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject) {
 	items := []*fyne.MenuItem{
 		fyne.NewMenuItem(lang.L("totp.menu.edit"), func() {
 			v.showEditDialog(entry)
@@ -227,7 +227,8 @@ func (v *totpListView) showEntryMenu(entry *totpstore.Entry) {
 
 	menu := fyne.NewMenu("", items...)
 	popup := widget.NewPopUpMenu(menu, v.app.mainWindow.Canvas())
-	popup.ShowAtPosition(fyne.CurrentApp().Driver().AbsolutePositionForObject(v.list))
+	rel := fyne.NewPos(anchor.Size().Width/2-popup.Size().Width, anchor.Size().Height/2)
+	popup.ShowAtRelativePosition(rel, anchor)
 }
 
 // showEditDialog は編集ダイアログを表示する

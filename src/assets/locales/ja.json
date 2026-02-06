@@ -1,6 +1,8 @@
 {
     "language.name": "日本語",
     "app.title": "Winticator",
+    "Yes": "はい",
+    "No": "いいえ",
     "toolbar.totp": "TOTP",
     "toolbar.setting": "設定",
     "toolbar.info": "情報",
@@ -25,8 +27,6 @@
     "dialog.cancel": "キャンセル",
     "dialog.add": "追加",
     "dialog.close": "閉じる",
-    "dialog.yes": "はい",
-    "dialog.no": "いいえ",
     "setting.header": "設定",
     "setting.theme": "テーマ:",
     "setting.theme.light": "ライト",
