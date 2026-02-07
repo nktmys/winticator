@@ -113,39 +113,6 @@ func (v *totpListView) refreshEntries() {
 	}
 }
 
-// moveEntry はエントリを指定方向に移動する（direction: -1=上, +1=下）
-func (v *totpListView) moveEntry(id string, direction int) {
-	// 現在のエントリからIDリストを生成
-	ids := make([]string, len(v.entries))
-	targetIdx := -1
-	for i, e := range v.entries {
-		ids[i] = e.ID
-		if e.ID == id {
-			targetIdx = i
-		}
-	}
-
-	if targetIdx < 0 {
-		return
-	}
-
-	// 隣接エントリと入れ替え
-	swapIdx := targetIdx + direction
-	if swapIdx < 0 || swapIdx >= len(ids) {
-		return
-	}
-	ids[targetIdx], ids[swapIdx] = ids[swapIdx], ids[targetIdx]
-
-	// 永続化してリスト更新
-	if err := v.store.Reorder(ids); err != nil {
-		return
-	}
-	if err := v.store.Save(); err != nil {
-		return
-	}
-	v.refreshEntries()
-}
-
 // scanQRCode はQRコードをスキャンしてエントリを追加する
 func (v *totpListView) scanQRCode() {
 	go func() {
