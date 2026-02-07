@@ -322,40 +322,44 @@ func (v *totpListView) confirmDelete(entry *totpstore.Entry) {
 
 // scanQRCode はQRコードをスキャンしてエントリを追加する
 func (v *totpListView) scanQRCode() {
-	// ウィンドウを最小化
+	go func() {
+		// メインスレッドがHideを処理できるよう待機
+		time.Sleep(500 * time.Millisecond)
+
+		// スキャン実行
+		results, err := qrscanner.CaptureAndScan()
+
+		// UIスレッドでウィンドウ復帰と結果処理
+		fyne.Do(func() {
+			v.app.mainWindow.Show()
+			v.app.mainWindow.RequestFocus()
+
+			if err != nil {
+				var errMsg string
+				switch err {
+				case qrscanner.ErrNoQRCodeFound:
+					errMsg = lang.L("totp.scan.notfound")
+				case qrscanner.ErrNoTOTPQRFound:
+					errMsg = lang.L("totp.scan.nottotp")
+				default:
+					errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)
+				}
+				dialog.ShowError(errors.New(errMsg), v.app.mainWindow)
+				return
+			}
+
+			if len(results) == 0 {
+				dialog.ShowError(errors.New(lang.L("totp.scan.notfound")), v.app.mainWindow)
+				return
+			}
+
+			result := results[0]
+			v.showAddConfirmDialog(result.Entry)
+		})
+	}()
+
+	// goroutine起動後にHide → 関数がすぐにreturnしイベントループがHideを処理
 	v.app.mainWindow.Hide()
-
-	// 少し待ってからキャプチャ
-	time.Sleep(500 * time.Millisecond)
-
-	// スキャン実行
-	results, err := qrscanner.CaptureAndScan()
-
-	// ウィンドウを復帰
-	v.app.mainWindow.Show()
-
-	if err != nil {
-		var errMsg string
-		switch err {
-		case qrscanner.ErrNoQRCodeFound:
-			errMsg = lang.L("totp.scan.notfound")
-		case qrscanner.ErrNoTOTPQRFound:
-			errMsg = lang.L("totp.scan.nottotp")
-		default:
-			errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)
-		}
-		dialog.ShowError(errors.New(errMsg), v.app.mainWindow)
-		return
-	}
-
-	if len(results) == 0 {
-		dialog.ShowError(errors.New(lang.L("totp.scan.notfound")), v.app.mainWindow)
-		return
-	}
-
-	// 結果を確認ダイアログで表示
-	result := results[0]
-	v.showAddConfirmDialog(result.Entry)
 }
 
 // showAddConfirmDialog は追加確認ダイアログを表示する
