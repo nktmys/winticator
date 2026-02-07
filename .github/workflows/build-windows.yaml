@@ -40,6 +40,9 @@ jobs:
       - name: Install fyne tool
         run: go install fyne.io/tools/cmd/fyne@latest
 
+      - name: Set build number
+        run: sed -i 's/^Build = .*/Build = ${{ github.run_number }}/' src/FyneApp.toml
+
       - name: Build
         run: fyne package -os windows -src=./src -release
 
