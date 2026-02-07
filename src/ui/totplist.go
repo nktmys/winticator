@@ -3,6 +3,8 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -113,39 +115,6 @@ func (v *totpListView) refreshEntries() {
 	}
 }
 
-// moveEntry はエントリを指定方向に移動する（direction: -1=上, +1=下）
-func (v *totpListView) moveEntry(id string, direction int) {
-	// 現在のエントリからIDリストを生成
-	ids := make([]string, len(v.entries))
-	targetIdx := -1
-	for i, e := range v.entries {
-		ids[i] = e.ID
-		if e.ID == id {
-			targetIdx = i
-		}
-	}
-
-	if targetIdx < 0 {
-		return
-	}
-
-	// 隣接エントリと入れ替え
-	swapIdx := targetIdx + direction
-	if swapIdx < 0 || swapIdx >= len(ids) {
-		return
-	}
-	ids[targetIdx], ids[swapIdx] = ids[swapIdx], ids[targetIdx]
-
-	// 永続化してリスト更新
-	if err := v.store.Reorder(ids); err != nil {
-		return
-	}
-	if err := v.store.Save(); err != nil {
-		return
-	}
-	v.refreshEntries()
-}
-
 // scanQRCode はQRコードをスキャンしてエントリを追加する
 func (v *totpListView) scanQRCode() {
 	go func() {
@@ -167,6 +136,8 @@ func (v *totpListView) scanQRCode() {
 					errMsg = lang.L("totp.scan.notfound")
 				case qrscanner.ErrNoTOTPQRFound:
 					errMsg = lang.L("totp.scan.nottotp")
+				case totpstore.ErrNoTOTPEntries:
+					errMsg = lang.L("totp.scan.nomigrationtotp")
 				default:
 					errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)
 				}
@@ -179,8 +150,11 @@ func (v *totpListView) scanQRCode() {
 				return
 			}
 
-			result := results[0]
-			v.showAddConfirmDialog(result.Entry)
+			if len(results) == 1 {
+				v.showAddConfirmDialog(results[0].Entry)
+			} else {
+				v.showBatchAddConfirmDialog(results)
+			}
 		})
 	}()
 
@@ -197,6 +171,44 @@ func (v *totpListView) showAddConfirmDialog(entry *totpstore.Entry) {
 		func(e *totpstore.Entry) error {
 			return v.store.Add(e)
 		},
+	)
+}
+
+// showBatchAddConfirmDialog は複数エントリの一括追加確認ダイアログを表示する
+func (v *totpListView) showBatchAddConfirmDialog(results []qrscanner.ScanResult) {
+	// エントリ名一覧を作成
+	var names []string
+	for _, r := range results {
+		names = append(names, "- "+r.Entry.DisplayName())
+	}
+	count := strconv.Itoa(len(results))
+	message := lang.L("totp.migration.confirm", M{"Count": count}) + "\n\n" + strings.Join(names, "\n")
+
+	dialog.ShowConfirm(
+		lang.L("totp.migration.title"),
+		message,
+		func(confirmed bool) {
+			if !confirmed {
+				return
+			}
+			for _, r := range results {
+				if err := v.store.Add(r.Entry); err != nil {
+					dialog.ShowError(err, v.app.mainWindow)
+					return
+				}
+			}
+			if err := v.store.Save(); err != nil {
+				dialog.ShowError(err, v.app.mainWindow)
+				return
+			}
+			v.refreshEntries()
+			dialog.ShowInformation(
+				lang.L("totp.migration.title"),
+				lang.L("totp.migration.success", M{"Count": count}),
+				v.app.mainWindow,
+			)
+		},
+		v.app.mainWindow,
 	)
 }
 

@@ -1,14 +1,17 @@
 package qrscanner
 
 import (
+	"encoding/base64"
 	"image"
 	"image/color"
 	"testing"
 
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/nktmys/winticator/src/usecase/totpstore/migration"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 )
 
 // generateQRImage はテスト用にQRコード画像を生成する
@@ -99,4 +102,49 @@ func TestScanImage_ComplexURI(t *testing.T) {
 	assert.Equal(t, "SHA256", entry.Algorithm)
 	assert.Equal(t, 8, entry.Digits)
 	assert.Equal(t, 60, entry.Period)
+}
+
+func TestScanImage_MigrationQR(t *testing.T) {
+	// otpauth-migration QRコード画像を生成
+	payload := &migration.MigrationPayload{
+		OtpParameters: []*migration.MigrationPayload_OtpParameters{
+			{
+				Secret:    []byte("12345678901234567890"),
+				Name:      "Google:user@gmail.com",
+				Issuer:    "Google",
+				Algorithm: migration.MigrationPayload_SHA1,
+				Digits:    migration.MigrationPayload_SIX,
+				Type:      migration.MigrationPayload_TOTP,
+			},
+			{
+				Secret:    []byte("abcdefghijklmnopqrst"),
+				Name:      "GitHub:myaccount",
+				Issuer:    "GitHub",
+				Algorithm: migration.MigrationPayload_SHA256,
+				Digits:    migration.MigrationPayload_EIGHT,
+				Type:      migration.MigrationPayload_TOTP,
+			},
+		},
+	}
+	data, err := proto.Marshal(payload)
+	require.NoError(t, err)
+
+	uri := "otpauth-migration://offline?data=" + base64.StdEncoding.EncodeToString(data)
+	img, err := generateQRImage(uri)
+	require.NoError(t, err)
+
+	// スキャン
+	results, err := ScanImage(img)
+	require.NoError(t, err)
+	require.Len(t, results, 2)
+
+	assert.Equal(t, "Google", results[0].Entry.Issuer)
+	assert.Equal(t, "user@gmail.com", results[0].Entry.Account)
+	assert.Equal(t, "SHA1", results[0].Entry.Algorithm)
+	assert.Equal(t, 6, results[0].Entry.Digits)
+
+	assert.Equal(t, "GitHub", results[1].Entry.Issuer)
+	assert.Equal(t, "myaccount", results[1].Entry.Account)
+	assert.Equal(t, "SHA256", results[1].Entry.Algorithm)
+	assert.Equal(t, 8, results[1].Entry.Digits)
 }

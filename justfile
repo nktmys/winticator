@@ -4,6 +4,7 @@ all: lint test vuln
 
 mod install 'just/install.just'
 mod build 'just/build.just'
+mod protobuf 'just/protobuf.just'
 
 lint:
     go fmt ./...

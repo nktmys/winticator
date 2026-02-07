@@ -127,21 +127,36 @@ func scanQRCodes(img image.Image) ([]ScanResult, error) {
 
 	// 結果をパース
 	uri := result.GetText()
-	if !strings.HasPrefix(uri, "otpauth://totp/") {
+
+	switch {
+	// otpauth-migration:// URI（Google Authenticatorエクスポート形式）
+	case strings.HasPrefix(uri, "otpauth-migration://"):
+		entries, err := totpstore.ParseOTPAuthMigrationURI(uri)
+		if err != nil {
+			return nil, err
+		}
+		results := make([]ScanResult, len(entries))
+		for i, entry := range entries {
+			results[i] = ScanResult{Entry: entry, URI: uri}
+		}
+		return results, nil
+
+	// otpauth://totp/ URI（標準TOTP形式）
+	case strings.HasPrefix(uri, "otpauth://totp/"):
+		entry, err := totpstore.ParseOTPAuthURI(uri)
+		if err != nil {
+			return nil, err
+		}
+		return []ScanResult{
+			{
+				Entry: entry,
+				URI:   uri,
+			},
+		}, nil
+
+	default:
 		return nil, ErrNoTOTPQRFound
 	}
-
-	entry, err := totpstore.ParseOTPAuthURI(uri)
-	if err != nil {
-		return nil, err
-	}
-
-	return []ScanResult{
-		{
-			Entry: entry,
-			URI:   uri,
-		},
-	}, nil
 }
 
 // ScanImage は指定した画像からQRコードをスキャンする（テスト用）
