@@ -38,6 +38,10 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 			view.updateListItem(id, item)
 		},
 	)
+	view.list.OnSelected = func(id widget.ListItemID) {
+		// 選択フォーカスを解除
+		view.list.UnselectAll()
+	}
 
 	// 空の場合のメッセージ
 	emptyLabel := widget.NewLabel(lang.L("totp.empty"))
