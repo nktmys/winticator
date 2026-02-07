@@ -10,6 +10,8 @@
     "totp.empty": "No TOTP entries.\nClick 'Add' to scan a QR code.",
     "totp.copied.title": "Copied",
     "totp.copied.message": "Code for {{.displayName}}\ncopied to clipboard",
+    "totp.menu.moveup": "Move Up",
+    "totp.menu.movedown": "Move Down",
     "totp.menu.edit": "Edit",
     "totp.menu.showqr": "Show QR Code",
     "totp.menu.delete": "Delete",

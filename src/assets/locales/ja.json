@@ -10,6 +10,8 @@
     "totp.empty": "TOTPエントリがありません。\n「追加」をクリックしてQRコードをスキャンしてください。",
     "totp.copied.title": "コピー完了",
     "totp.copied.message": "{{.displayName}}\nのコードをクリップボードにコピーしました",
+    "totp.menu.moveup": "上へ移動",
+    "totp.menu.movedown": "下へ移動",
     "totp.menu.edit": "編集",
     "totp.menu.showqr": "QRコード表示",
     "totp.menu.delete": "削除",

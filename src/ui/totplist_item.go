@@ -103,8 +103,10 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 	}
 
 	// メニューボタン
+	index := id
+	total := len(v.entries)
 	menuButton.OnTapped = func() {
-		v.showEntryMenu(entryCopy, menuButton)
+		v.showEntryMenu(entryCopy, menuButton, index, total)
 	}
 }
 
@@ -126,8 +128,29 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 }
 
 // showEntryMenu はエントリのメニューを表示する
-func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject) {
-	items := []*fyne.MenuItem{
+func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index, total int) {
+	var items []*fyne.MenuItem
+
+	// 先頭でなければ「上へ移動」を表示
+	if index > 0 {
+		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
+			v.moveEntry(entry.ID, -1)
+		}))
+	}
+
+	// 末尾でなければ「下へ移動」を表示
+	if index < total-1 {
+		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
+			v.moveEntry(entry.ID, +1)
+		}))
+	}
+
+	// 移動メニューがある場合はセパレータを追加
+	if len(items) > 0 {
+		items = append(items, fyne.NewMenuItemSeparator())
+	}
+
+	items = append(items,
 		fyne.NewMenuItem(lang.L("totp.menu.edit"), func() {
 			v.showEditDialog(entry)
 		}),
@@ -138,7 +161,7 @@ func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasO
 		fyne.NewMenuItem(lang.L("totp.menu.delete"), func() {
 			v.confirmDelete(entry)
 		}),
-	}
+	)
 
 	menu := fyne.NewMenu("", items...)
 	popup := widget.NewPopUpMenu(menu, v.app.mainWindow.Canvas())
