@@ -4,5 +4,5 @@ Website = "https://github.com/nktmys/winticator/"
 Icon = "./assets/icons/appicon.png"
 Name = "Winticator"
 ID = "com.winticator.app"
-Version = "0.2.0"
-Build = 1
+Version = "0.1.0"
+Build = 10
