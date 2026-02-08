@@ -154,6 +154,17 @@ xattr -r -d com.apple.quarantine /Applications/Winticator.app
 
 Replace `/Applications/Winticator.app` with the actual path where you placed the app.
 
+### macOS: QR code scanning does not work
+
+If QR code scanning does not work even though the "Screen Recording and System Audio Recording" permission is enabled, the permission may not be functioning correctly.
+
+To fix this:
+1. Open **System Settings** → **Privacy & Security** → **Screen Recording and System Audio Recording**
+2. Remove Winticator from the list by clicking the **−** (minus) button
+3. Re-add Winticator and enable the permission
+
+This should restore the screen capture functionality needed for QR code scanning.
+
 ---
 
 ## Notes
