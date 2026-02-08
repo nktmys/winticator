@@ -10,6 +10,7 @@ import (
 	"github.com/go-vgo/robotgo"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
+	"github.com/nfnt/resize"
 	"github.com/nktmys/winticator/src/usecase/totpstore"
 )
 
@@ -72,6 +73,9 @@ func copyImage(src image.Image) *image.RGBA {
 	// robotgoの画像はPixスライスの容量が不足している場合があるため、
 	// 実際にアクセス可能な範囲を計算する
 	validBounds := calculateValidBounds(src)
+	if validBounds.Empty() {
+		return nil
+	}
 
 	dst := image.NewRGBA(validBounds)
 	draw.Draw(dst, validBounds, src, validBounds.Min, draw.Src)
@@ -104,29 +108,63 @@ func calculateValidBounds(img image.Image) image.Rectangle {
 	return bounds
 }
 
-// scanQRCodes は画像からQRコードを検出してTOTPエントリを返す
-func scanQRCodes(img image.Image) ([]ScanResult, error) {
-	// gozxingのBinaryBitmapを作成
+// scaleFactors はQRデコード時に試行するスケールファクターのリスト
+var scaleFactors = []float64{1.0, 0.4, 0.6}
+
+var (
+	qrReader = qrcode.NewQRCodeReader()
+	qrHints  = map[gozxing.DecodeHintType]interface{}{
+		gozxing.DecodeHintType_TRY_HARDER: true,
+	}
+)
+
+// tryDecodeQR は単一画像に対してgozxingでQRコードのデコードを試みる
+func tryDecodeQR(img image.Image) (string, error) {
 	bmp, err := gozxing.NewBinaryBitmapFromImage(img)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	// QRコードリーダーを作成
-	reader := qrcode.NewQRCodeReader()
-
-	// QRコードをデコード
-	result, err := reader.Decode(bmp, nil)
+	result, err := qrReader.Decode(bmp, qrHints)
 	if err != nil {
-		// 見つからない場合
-		if strings.Contains(err.Error(), "NotFoundException") {
-			return nil, ErrNoQRCodeFound
+		return "", err
+	}
+	return result.GetText(), nil
+}
+
+// decodeQRCode は画像からQRコードをデコードする
+// 元のサイズで失敗した場合、複数のスケールファクターでリサイズして再試行する
+func decodeQRCode(img image.Image) (string, error) {
+	for _, scale := range scaleFactors {
+		var target image.Image
+		if scale == 1.0 {
+			target = img
+		} else {
+			bounds := img.Bounds()
+			newWidth := uint(float64(bounds.Dx()) * scale)
+			newHeight := uint(float64(bounds.Dy()) * scale)
+			if newWidth == 0 || newHeight == 0 {
+				continue
+			}
+			target = resize.Resize(newWidth, newHeight, img, resize.Bilinear)
 		}
+		text, err := tryDecodeQR(target)
+		if err == nil {
+			return text, nil
+		}
+		if !strings.Contains(err.Error(), "NotFoundException") {
+			return "", err
+		}
+	}
+	return "", ErrNoQRCodeFound
+}
+
+// scanQRCodes は画像からQRコードを検出してTOTPエントリを返す
+func scanQRCodes(img image.Image) ([]ScanResult, error) {
+	// マルチスケールフォールバックでQRコードをデコード
+	uri, err := decodeQRCode(img)
+	if err != nil {
 		return nil, err
 	}
-
-	// 結果をパース
-	uri := result.GetText()
 
 	switch {
 	// otpauth-migration:// URI（Google Authenticatorエクスポート形式）
