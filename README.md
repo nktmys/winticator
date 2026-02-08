@@ -30,6 +30,29 @@ not on product differentiation or commercial use.
 
 ---
 
+## Features
+
+- **QR Code Scanning** — Press the **Add** button to scan TOTP QR codes from your screen automatically
+- **Google Authenticator Import** — Bulk import entries via `otpauth-migration://` QR codes
+- **Backup & Restore** — Export/import entries using a proprietary password-protected backup file
+- **Fully Offline** — No network communication; all data stays on your machine
+- **Copy to Clipboard** — Tap an OTP code to copy it instantly
+- **Show QR Code** — Display any entry as a QR code for transfer to other devices
+
+---
+
+## Supported URI Schemes
+
+| Scheme | Description |
+|--------|-------------|
+| `otpauth://` | Standard TOTP URI format (RFC 6238) for adding individual entries |
+| `otpauth-migration://` | Google Authenticator export format for bulk import |
+
+> **Note:** `otpauth-migration://` QR codes that contain many entries may be dense and difficult to decode.
+> If scanning fails, try changing the display scale and scanning again, or export entries one at a time from the source app.
+
+---
+
 ## Screenshots
 
 | TOTP List | Settings |
