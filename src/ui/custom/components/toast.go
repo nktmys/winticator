@@ -11,7 +11,6 @@ import (
 // ShowToast はウィンドウ下部に一時的なトースト通知を表示する
 func ShowToast(win fyne.Window, message string) {
 	label := widget.NewLabel(message)
-	label.Wrapping = fyne.TextWrapWord
 
 	content := container.NewPadded(label)
 	popup := widget.NewPopUp(content, win.Canvas())
