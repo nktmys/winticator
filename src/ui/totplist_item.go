@@ -111,17 +111,15 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 		return
 	}
 
-	v.app.fyneApp.Clipboard().SetContent(code)
+	// クリップボードにコピーし、有効時間+3秒後にクリアをスケジュール
+	remaining := entry.RemainingSeconds()
+	v.app.clipboard.Copy(code, time.Duration(remaining+3)*time.Second)
 
 	// トースト通知を表示
 	components.ShowToast(
 		v.app.mainWindow,
 		lang.L("totp.copied.message"),
 	)
-
-	// クリップボードを有効時間+3秒後にクリア
-	remaining := entry.RemainingSeconds()
-	v.app.scheduleClipboardClear(code, time.Duration(remaining+3)*time.Second)
 }
 
 // showEntryMenu はエントリのメニューを表示する
