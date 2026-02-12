@@ -19,6 +19,9 @@ import (
 
 // createListItem はリストアイテムのテンプレートを作成する
 func (v *totpListView) createListItem() fyne.CanvasObject {
+	// 表示名（Account または Issuer）
+	displayNameLabel := widget.NewLabel("DisplayName")
+
 	// TOTPコード（青色・大きいフォント・タップ可能）
 	codeText := components.NewTappableText("000 000",
 		custom.ColorPrimaryBlue, 28)
@@ -34,8 +37,8 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 	// メニューボタン
 	menuButton := widget.NewButtonWithIcon("", theme.MoreHorizontalIcon(), nil)
 
-	// 左側: コード（パディング付き）
-	leftContent := container.NewVBox(paddedCode)
+	// 左側: 表示名 + コード（パディング付き）
+	leftContent := container.NewVBox(displayNameLabel, paddedCode)
 
 	// 右側: 円形プログレス + メニュー
 	rightContent := container.NewHBox(circularProgress, menuButton)
@@ -54,13 +57,17 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 
 	// 左側のコンテンツを取得
 	leftContent := border.Objects[0].(*fyne.Container)
-	paddedCode := leftContent.Objects[0].(*fyne.Container)
+	displayNameLabel := leftContent.Objects[0].(*widget.Label)
+	paddedCode := leftContent.Objects[1].(*fyne.Container)
 	codeText := paddedCode.Objects[1].(*components.TappableText)
 
 	// 右側のコンテンツを取得
 	rightBox := border.Objects[1].(*fyne.Container)
 	circularProgress := rightBox.Objects[0].(*components.CircularProgress)
 	menuButton := rightBox.Objects[1].(*widget.Button)
+
+	// 表示名を設定
+	displayNameLabel.SetText(entry.DisplayName())
 
 	// TOTPコードを生成
 	code, err := entry.TOTP()
@@ -112,8 +119,8 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 	}
 
 	// クリップボードにコピーし、有効時間+3秒後にクリアをスケジュール
-	remaining := entry.RemainingSeconds()
-	v.app.clipboard.Copy(code, time.Duration(remaining+3)*time.Second)
+	remaining := time.Duration(entry.RemainingSeconds()+3) * time.Second
+	v.app.clipboard.Copy(code, remaining)
 
 	// トースト通知を表示
 	components.ShowToast(
