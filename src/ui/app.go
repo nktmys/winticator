@@ -1,6 +1,9 @@
 package ui
 
 import (
+	"sync"
+	"time"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
@@ -43,6 +46,11 @@ type App struct {
 	settingButton *widget.Button
 	infoButton    *widget.Button
 	addButton     *widget.Button
+
+	// クリップボード管理
+	clipboardTimer *time.Timer
+	copiedCode     string
+	clipboardMu    sync.Mutex
 }
 
 // NewApp は新しいアプリケーションインスタンスを作成する
@@ -79,6 +87,12 @@ func (a *App) Run() {
 
 	content := a.createUI()
 	a.mainWindow.SetContent(content)
+
+	// アプリ終了時にクリップボードをクリア
+	a.mainWindow.SetCloseIntercept(func() {
+		a.clearClipboard()
+		a.mainWindow.Close()
+	})
 
 	a.mainWindow.ShowAndRun()
 }
@@ -181,6 +195,46 @@ func (a *App) updateToolbarState() {
 	a.totpButton.Refresh()
 	a.settingButton.Refresh()
 	a.infoButton.Refresh()
+}
+
+// scheduleClipboardClear はクリップボードの内容を指定時間後にクリアする
+func (a *App) scheduleClipboardClear(copiedCode string, delay time.Duration) {
+	a.clipboardMu.Lock()
+	defer a.clipboardMu.Unlock()
+
+	if a.clipboardTimer != nil {
+		a.clipboardTimer.Stop()
+	}
+
+	a.copiedCode = copiedCode
+	a.clipboardTimer = time.AfterFunc(delay, func() {
+		fyne.Do(func() {
+			a.clipboardMu.Lock()
+			code := a.copiedCode
+			a.copiedCode = ""
+			a.clipboardMu.Unlock()
+
+			if code != "" && a.fyneApp.Clipboard().Content() == code {
+				a.fyneApp.Clipboard().SetContent("")
+			}
+		})
+	})
+}
+
+// clearClipboard はコピーしたTOTPコードをクリップボードからクリアする
+func (a *App) clearClipboard() {
+	a.clipboardMu.Lock()
+	if a.clipboardTimer != nil {
+		a.clipboardTimer.Stop()
+		a.clipboardTimer = nil
+	}
+	code := a.copiedCode
+	a.copiedCode = ""
+	a.clipboardMu.Unlock()
+
+	if code != "" {
+		a.fyneApp.Clipboard().SetContent("")
+	}
 }
 
 // handleAddButton は追加ボタンの処理を行う
