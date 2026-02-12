@@ -232,7 +232,7 @@ func (a *App) clearClipboard() {
 	a.copiedCode = ""
 	a.clipboardMu.Unlock()
 
-	if code != "" {
+	if code != "" && a.fyneApp.Clipboard().Content() == code {
 		a.fyneApp.Clipboard().SetContent("")
 	}
 }
