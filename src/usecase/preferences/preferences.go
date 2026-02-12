@@ -29,13 +29,14 @@ func New(p fyne.Preferences) *Preferences {
 }
 
 // GetThemeVariant はテーマ設定を取得する
-func (p *Preferences) GetThemeVariant() int {
-	return p.fyne.IntWithFallback(keyThemeVariant, defaultThemeVariant)
+func (p *Preferences) GetThemeVariant() fyne.ThemeVariant {
+	variant := p.fyne.IntWithFallback(keyThemeVariant, defaultThemeVariant)
+	return fyne.ThemeVariant(variant)
 }
 
 // SetThemeVariant はテーマ設定を保存する
-func (p *Preferences) SetThemeVariant(variant int) {
-	p.fyne.SetInt(keyThemeVariant, variant)
+func (p *Preferences) SetThemeVariant(variant fyne.ThemeVariant) {
+	p.fyne.SetInt(keyThemeVariant, int(variant))
 }
 
 // GetLanguage は言語設定を取得する

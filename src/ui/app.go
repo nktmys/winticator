@@ -56,7 +56,7 @@ func NewApp() *App {
 
 	// 保存されたテーマ設定を読み込み、なければLightをデフォルトに
 	variant := prefs.GetThemeVariant()
-	fyneApp.Settings().SetTheme(custom.NewTheme(fyne.ThemeVariant(variant)))
+	fyneApp.Settings().SetTheme(custom.NewTheme(variant))
 
 	// TOTPストアを作成
 	store := totpstore.New(prefs)

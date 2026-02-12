@@ -36,7 +36,7 @@ func (a *App) createSettingTab() fyne.CanvasObject {
 	tab.themeRadio.Horizontal = true
 
 	// 現在の設定を反映
-	if fyne.ThemeVariant(currentVariant) == theme.VariantDark {
+	if currentVariant == theme.VariantDark {
 		tab.themeRadio.SetSelected(lang.L("setting.theme.dark"))
 	} else {
 		tab.themeRadio.SetSelected(lang.L("setting.theme.light"))
@@ -115,12 +115,12 @@ func (t *settingTab) handleThemeRadio(selected string) {
 	}
 
 	// 値に変更がなければ何もしない
-	if t.preferences.GetThemeVariant() == index {
+	variant := fyne.ThemeVariant(index)
+	if t.preferences.GetThemeVariant() == variant {
 		return
 	}
 
-	variant := fyne.ThemeVariant(index)
-	t.preferences.SetThemeVariant(index)
+	t.preferences.SetThemeVariant(variant)
 	t.setting.SetTheme(custom.NewTheme(variant))
 }
 
