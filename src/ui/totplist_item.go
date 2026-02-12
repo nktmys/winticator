@@ -22,9 +22,8 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 	// 表示名（Account または Issuer）
 	displayNameLabel := widget.NewLabel("DisplayName")
 
-	// TOTPコード（青色・大きいフォント・タップ可能）
-	codeText := components.NewTappableText("000 000",
-		custom.ColorPrimaryBlue, 28)
+	// TOTPコード（青色・大きいフォント）
+	codeText := components.NewStyledText("000 000", custom.ColorPrimaryBlue, 28)
 
 	// 左パディング用のスペーサーを追加（widget.LabelのInnerPaddingに合わせる）
 	codePadding := canvas.NewRectangle(color.Transparent)
@@ -59,7 +58,7 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 	leftContent := border.Objects[0].(*fyne.Container)
 	displayNameLabel := leftContent.Objects[0].(*widget.Label)
 	paddedCode := leftContent.Objects[1].(*fyne.Container)
-	codeText := paddedCode.Objects[1].(*components.TappableText)
+	codeText := paddedCode.Objects[1].(*components.StyledText)
 
 	// 右側のコンテンツを取得
 	rightBox := border.Objects[1].(*fyne.Container)
@@ -97,13 +96,8 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 		circularProgress.SetColor(normalColor)
 	}
 
-	// コードクリックでコピー（entryをキャプチャ）
-	entryCopy := entry
-	codeText.OnTapped = func() {
-		v.copyCode(entryCopy)
-	}
-
 	// メニューボタン
+	entryCopy := entry
 	index := id
 	total := len(v.entries)
 	menuButton.OnTapped = func() {
@@ -130,7 +124,7 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 }
 
 // showEntryMenu はエントリのメニューを表示する
-func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index, total int) {
+func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
 	var items []*fyne.MenuItem
 
 	// 先頭でなければ「上へ移動」を表示
