@@ -42,7 +42,8 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 	// 右側: 円形プログレス + メニュー
 	rightContent := container.NewHBox(circularProgress, menuButton)
 
-	return container.NewBorder(nil, nil, leftContent, rightContent)
+	content := container.NewBorder(nil, nil, leftContent, rightContent)
+	return components.NewHoverBlocker(content)
 }
 
 // updateListItem はリストアイテムを更新する
@@ -52,7 +53,8 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 	}
 
 	entry := v.entries[id]
-	border := item.(*fyne.Container)
+	blocker := item.(*components.HoverBlocker)
+	border := blocker.Content.(*fyne.Container)
 
 	// 左側のコンテンツを取得
 	leftContent := border.Objects[0].(*fyne.Container)

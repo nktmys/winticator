@@ -41,12 +41,14 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 		},
 	)
 	view.list.OnSelected = func(id widget.ListItemID) {
-		// 選択フォーカスを解除
+		// 選択・フォーカスを解除
 		view.list.UnselectAll()
-		// タップでTOTPコードをコピー
-		if id >= 0 && id < len(view.entries) {
-			view.copyCode(view.entries[id])
+		a.mainWindow.Canvas().Unfocus()
+		if id >= len(view.entries) {
+			return
 		}
+		// タップでTOTPコードをコピー
+		view.copyCode(view.entries[id])
 	}
 
 	// 空の場合のメッセージ
