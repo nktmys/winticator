@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/lang"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nktmys/winticator/src/usecase/clipboard"
 	"github.com/nktmys/winticator/src/usecase/qrscanner"
 	"github.com/nktmys/winticator/src/usecase/totpstore"
 )
@@ -19,10 +20,11 @@ import (
 // createTOTPListView はTOTPリスト画面を作成する
 func (a *App) createTOTPListView() fyne.CanvasObject {
 	view := &totpListView{
-		app:      a,
-		store:    a.totpStore,
-		entries:  make([]*totpstore.Entry, 0),
-		stopChan: make(chan bool),
+		app:       a,
+		store:     a.totpStore,
+		clipboard: a.clipboard,
+		entries:   make([]*totpstore.Entry, 0),
+		stopChan:  make(chan bool),
 	}
 
 	// ストアからエントリを読み込み
@@ -41,8 +43,14 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 		},
 	)
 	view.list.OnSelected = func(id widget.ListItemID) {
-		// 選択フォーカスを解除
+		// 選択・フォーカスを解除
 		view.list.UnselectAll()
+		a.mainWindow.Canvas().Unfocus()
+		if id >= len(view.entries) {
+			return
+		}
+		// タップでTOTPコードをコピー
+		view.copyCode(view.entries[id])
 	}
 
 	// 空の場合のメッセージ
@@ -66,6 +74,7 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 type totpListView struct {
 	app       *App
 	store     *totpstore.Store
+	clipboard *clipboard.Manager
 	list      *widget.List
 	entries   []*totpstore.Entry
 	ticker    *time.Ticker

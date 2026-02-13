@@ -18,43 +18,44 @@ var (
 	defaultLanguage     = ""                      // 空文字列はシステムロケールを使用
 )
 
-// Preferences はアプリケーション設定を管理する
-type Preferences struct {
-	fyne fyne.Preferences
+// Manager はアプリケーション設定を管理する
+type Manager struct {
+	preferences fyne.Preferences
 }
 
 // New は新しいPreferencesインスタンスを作成する
-func New(p fyne.Preferences) *Preferences {
-	return &Preferences{fyne: p}
+func New(preferences fyne.Preferences) *Manager {
+	return &Manager{preferences: preferences}
 }
 
 // GetThemeVariant はテーマ設定を取得する
-func (p *Preferences) GetThemeVariant() int {
-	return p.fyne.IntWithFallback(keyThemeVariant, defaultThemeVariant)
+func (m *Manager) GetThemeVariant() fyne.ThemeVariant {
+	variant := m.preferences.IntWithFallback(keyThemeVariant, defaultThemeVariant)
+	return fyne.ThemeVariant(variant)
 }
 
 // SetThemeVariant はテーマ設定を保存する
-func (p *Preferences) SetThemeVariant(variant int) {
-	p.fyne.SetInt(keyThemeVariant, variant)
+func (m *Manager) SetThemeVariant(variant fyne.ThemeVariant) {
+	m.preferences.SetInt(keyThemeVariant, int(variant))
 }
 
 // GetLanguage は言語設定を取得する
 // 空文字列の場合はシステムロケールを使用する
-func (p *Preferences) GetLanguage() string {
-	return p.fyne.StringWithFallback(keyLanguage, defaultLanguage)
+func (m *Manager) GetLanguage() string {
+	return m.preferences.StringWithFallback(keyLanguage, defaultLanguage)
 }
 
 // SetLanguage は言語設定を保存する
-func (p *Preferences) SetLanguage(language string) {
-	p.fyne.SetString(keyLanguage, language)
+func (m *Manager) SetLanguage(language string) {
+	m.preferences.SetString(keyLanguage, language)
 }
 
 // GetTOTPData はTOTPデータを取得する
-func (p *Preferences) GetTOTPData() string {
-	return p.fyne.StringWithFallback(keyTOTPData, "")
+func (m *Manager) GetTOTPData() string {
+	return m.preferences.StringWithFallback(keyTOTPData, "")
 }
 
 // SetTOTPData はTOTPデータを保存する
-func (p *Preferences) SetTOTPData(data string) {
-	p.fyne.SetString(keyTOTPData, data)
+func (m *Manager) SetTOTPData(data string) {
+	m.preferences.SetString(keyTOTPData, data)
 }

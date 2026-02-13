@@ -2,6 +2,7 @@ package ui
 
 import (
 	"image/color"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
@@ -21,9 +22,8 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 	// 表示名（Account または Issuer）
 	displayNameLabel := widget.NewLabel("DisplayName")
 
-	// TOTPコード（青色・大きいフォント・タップ可能）
-	codeText := components.NewTappableText("000 000",
-		custom.ColorPrimaryBlue, 28)
+	// TOTPコード（青色・大きいフォント）
+	codeText := components.NewStyledText("000 000", custom.ColorPrimaryBlue, 28)
 
 	// 左パディング用のスペーサーを追加（widget.LabelのInnerPaddingに合わせる）
 	codePadding := canvas.NewRectangle(color.Transparent)
@@ -42,7 +42,8 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 	// 右側: 円形プログレス + メニュー
 	rightContent := container.NewHBox(circularProgress, menuButton)
 
-	return container.NewBorder(nil, nil, leftContent, rightContent)
+	content := container.NewBorder(nil, nil, leftContent, rightContent)
+	return components.NewHoverBlocker(content)
 }
 
 // updateListItem はリストアイテムを更新する
@@ -52,13 +53,14 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 	}
 
 	entry := v.entries[id]
-	border := item.(*fyne.Container)
+	blocker := item.(*components.HoverBlocker)
+	border := blocker.Content.(*fyne.Container)
 
 	// 左側のコンテンツを取得
 	leftContent := border.Objects[0].(*fyne.Container)
 	displayNameLabel := leftContent.Objects[0].(*widget.Label)
 	paddedCode := leftContent.Objects[1].(*fyne.Container)
-	codeText := paddedCode.Objects[1].(*components.TappableText)
+	codeText := paddedCode.Objects[1].(*components.StyledText)
 
 	// 右側のコンテンツを取得
 	rightBox := border.Objects[1].(*fyne.Container)
@@ -96,13 +98,8 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 		circularProgress.SetColor(normalColor)
 	}
 
-	// コードクリックでコピー（entryをキャプチャ）
-	entryCopy := entry
-	codeText.OnTapped = func() {
-		v.copyCode(entryCopy)
-	}
-
 	// メニューボタン
+	entryCopy := entry
 	index := id
 	total := len(v.entries)
 	menuButton.OnTapped = func() {
@@ -117,18 +114,19 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 		return
 	}
 
-	v.app.fyneApp.Clipboard().SetContent(code)
+	// クリップボードにコピーし、有効時間+3秒後にクリアをスケジュール
+	remaining := time.Duration(entry.RemainingSeconds()+3) * time.Second
+	v.clipboard.Copy(code, remaining)
 
-	// コピー完了通知
-	dialog.ShowInformation(
-		lang.L("totp.copied.title"),
-		lang.L("totp.copied.message", M{"displayName": entry.DisplayName()}),
+	// トースト通知を表示
+	components.ShowToast(
 		v.app.mainWindow,
+		lang.L("totp.copied.message"),
 	)
 }
 
 // showEntryMenu はエントリのメニューを表示する
-func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index, total int) {
+func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
 	var items []*fyne.MenuItem
 
 	// 先頭でなければ「上へ移動」を表示
