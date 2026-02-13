@@ -22,7 +22,7 @@ type pageID int
 
 const (
 	pageTOTP pageID = iota
-	pageSetting
+	pageSettings
 	pageAppInfo
 )
 
@@ -40,13 +40,13 @@ type App struct {
 	currentPage   pageID
 
 	// TOTPリストビュー
-	totpListView *totpListView
+	totpListView *totpListTab
 
 	// ツールバーボタン
-	totpButton    *widget.Button
-	settingButton *widget.Button
-	infoButton    *widget.Button
-	addButton     *widget.Button
+	totpButton     *widget.Button
+	settingsButton *widget.Button
+	infoButton     *widget.Button
+	addButton      *widget.Button
 }
 
 // NewApp は新しいアプリケーションインスタンスを作成する
@@ -104,8 +104,8 @@ func (a *App) createUI() fyne.CanvasObject {
 	a.pageContainer = container.NewStack()
 
 	// 各ページを作成
-	a.pages[pageTOTP] = a.createTOTPListView()
-	a.pages[pageSetting] = a.createSettingView()
+	a.pages[pageTOTP] = a.createTOTPListTab()
+	a.pages[pageSettings] = a.createSettingsTab()
 	a.pages[pageAppInfo] = a.createAppInfoTab()
 
 	// 初期ページを表示
@@ -122,8 +122,8 @@ func (a *App) createToolbar() fyne.CanvasObject {
 		a.showPage(pageTOTP)
 	})
 
-	a.settingButton = widget.NewButtonWithIcon(lang.L("toolbar.setting"), theme.SettingsIcon(), func() {
-		a.showPage(pageSetting)
+	a.settingsButton = widget.NewButtonWithIcon(lang.L("toolbar.settings"), theme.SettingsIcon(), func() {
+		a.showPage(pageSettings)
 	})
 
 	a.infoButton = widget.NewButtonWithIcon(lang.L("toolbar.info"), theme.InfoIcon(), func() {
@@ -142,7 +142,7 @@ func (a *App) createToolbar() fyne.CanvasObject {
 	// ツールバーコンテナ
 	leftButtons := container.NewHBox(
 		a.totpButton,
-		a.settingButton,
+		a.settingsButton,
 		a.infoButton,
 	)
 
@@ -175,15 +175,15 @@ func (a *App) showPage(id pageID) {
 func (a *App) updateToolbarState() {
 	// 現在のページに応じてボタンの状態を更新
 	a.totpButton.Importance = widget.MediumImportance
-	a.settingButton.Importance = widget.MediumImportance
+	a.settingsButton.Importance = widget.MediumImportance
 	a.infoButton.Importance = widget.MediumImportance
 
 	switch a.currentPage {
 	case pageTOTP:
 		a.totpButton.Importance = widget.HighImportance
 		a.addButton.Show()
-	case pageSetting:
-		a.settingButton.Importance = widget.HighImportance
+	case pageSettings:
+		a.settingsButton.Importance = widget.HighImportance
 		a.addButton.Hide()
 	case pageAppInfo:
 		a.infoButton.Importance = widget.HighImportance
@@ -191,7 +191,7 @@ func (a *App) updateToolbarState() {
 	}
 
 	a.totpButton.Refresh()
-	a.settingButton.Refresh()
+	a.settingsButton.Refresh()
 	a.infoButton.Refresh()
 }
 
@@ -200,9 +200,4 @@ func (a *App) handleAddButton() {
 	if a.totpListView != nil {
 		a.totpListView.scanQRCode()
 	}
-}
-
-// createSettingView は設定画面を作成する
-func (a *App) createSettingView() fyne.CanvasObject {
-	return a.createSettingTab()
 }

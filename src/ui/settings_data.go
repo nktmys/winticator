@@ -14,13 +14,13 @@ import (
 )
 
 // handleExport はエクスポート処理を行う
-func (t *settingTab) handleExport() {
+func (t *settingsTab) handleExport() {
 	// パスワード入力ダイアログ
 	passwordEntry := widget.NewPasswordEntry()
-	passwordEntry.PlaceHolder = lang.L("setting.export.password")
+	passwordEntry.PlaceHolder = lang.L("settings.export.password")
 
 	form := dialog.NewForm(
-		lang.L("setting.export.title"),
+		lang.L("settings.export.title"),
 		lang.L("dialog.save"),
 		lang.L("dialog.cancel"),
 		[]*widget.FormItem{
@@ -39,12 +39,12 @@ func (t *settingTab) handleExport() {
 }
 
 // doExport は実際のエクスポート処理を行う
-func (t *settingTab) doExport(password string) {
+func (t *settingsTab) doExport(password string) {
 	// エントリを取得
 	entries := t.app.totpStore.GetAll()
 	if len(entries) == 0 {
 		dialog.ShowInformation(
-			lang.L("setting.export.title"),
+			lang.L("settings.export.title"),
 			lang.L("totp.empty"),
 			t.app.mainWindow,
 		)
@@ -86,8 +86,8 @@ func (t *settingTab) doExport(password string) {
 		}
 
 		dialog.ShowInformation(
-			lang.L("setting.export.title"),
-			lang.L("setting.export.success"),
+			lang.L("settings.export.title"),
+			lang.L("settings.export.success"),
 			t.app.mainWindow,
 		)
 	}, t.app.mainWindow)
@@ -98,7 +98,7 @@ func (t *settingTab) doExport(password string) {
 }
 
 // handleImport はインポート処理を行う
-func (t *settingTab) handleImport() {
+func (t *settingsTab) handleImport() {
 	openDialog := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
 		if err != nil {
 			dialog.ShowError(err, t.app.mainWindow)
@@ -124,10 +124,10 @@ func (t *settingTab) handleImport() {
 
 		// パスワード入力ダイアログ
 		passwordEntry := widget.NewPasswordEntry()
-		passwordEntry.PlaceHolder = lang.L("setting.import.password")
+		passwordEntry.PlaceHolder = lang.L("settings.import.password")
 
 		form := dialog.NewForm(
-			lang.L("setting.import.title"),
+			lang.L("settings.import.title"),
 			lang.L("dialog.save"),
 			lang.L("dialog.cancel"),
 			[]*widget.FormItem{
@@ -150,7 +150,7 @@ func (t *settingTab) handleImport() {
 }
 
 // doImport は実際のインポート処理を行う
-func (t *settingTab) doImport(data []byte, password string) {
+func (t *settingsTab) doImport(data []byte, password string) {
 	// Base64デコード
 	decoded, err := base64.StdEncoding.DecodeString(string(data))
 	if err != nil {
@@ -175,8 +175,8 @@ func (t *settingTab) doImport(data []byte, password string) {
 	// 既存データとマージするか確認
 	if t.app.totpStore.Count() > 0 {
 		dialog.ShowConfirm(
-			lang.L("setting.import.title"),
-			lang.L("setting.import.merge"),
+			lang.L("settings.import.title"),
+			lang.L("settings.import.merge"),
 			func(merge bool) {
 				if !merge {
 					// 既存データを削除
@@ -194,7 +194,7 @@ func (t *settingTab) doImport(data []byte, password string) {
 }
 
 // importEntries はエントリをインポートする
-func (t *settingTab) importEntries(entries []*totpstore.Entry) {
+func (t *settingsTab) importEntries(entries []*totpstore.Entry) {
 	for _, entry := range entries {
 		if err := t.app.totpStore.Add(entry); err != nil {
 			dialog.ShowError(err, t.app.mainWindow)
@@ -213,8 +213,8 @@ func (t *settingTab) importEntries(entries []*totpstore.Entry) {
 	}
 
 	dialog.ShowInformation(
-		lang.L("setting.import.title"),
-		lang.L("setting.import.success"),
+		lang.L("settings.import.title"),
+		lang.L("settings.import.success"),
 		t.app.mainWindow,
 	)
 }

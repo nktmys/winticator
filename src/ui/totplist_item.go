@@ -18,7 +18,7 @@ import (
 )
 
 // createListItem はリストアイテムのテンプレートを作成する
-func (v *totpListView) createListItem() fyne.CanvasObject {
+func (t *totpListTab) createListItem() fyne.CanvasObject {
 	// 表示名（Account または Issuer）
 	displayNameLabel := widget.NewLabel("DisplayName")
 
@@ -47,12 +47,12 @@ func (v *totpListView) createListItem() fyne.CanvasObject {
 }
 
 // updateListItem はリストアイテムを更新する
-func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObject) {
-	if id >= len(v.entries) {
+func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObject) {
+	if id >= len(t.entries) {
 		return
 	}
 
-	entry := v.entries[id]
+	entry := t.entries[id]
 	blocker := item.(*components.HoverBlocker)
 	border := blocker.Content.(*fyne.Container)
 
@@ -101,14 +101,14 @@ func (v *totpListView) updateListItem(id widget.ListItemID, item fyne.CanvasObje
 	// メニューボタン
 	entryCopy := entry
 	index := id
-	total := len(v.entries)
+	total := len(t.entries)
 	menuButton.OnTapped = func() {
-		v.showEntryMenu(entryCopy, menuButton, index, total)
+		t.showEntryMenu(entryCopy, menuButton, index, total)
 	}
 }
 
 // copyCode はTOTPコードをクリップボードにコピーする
-func (v *totpListView) copyCode(entry *totpstore.Entry) {
+func (t *totpListTab) copyCode(entry *totpstore.Entry) {
 	code, err := entry.TOTP()
 	if err != nil {
 		return
@@ -116,30 +116,30 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 
 	// クリップボードにコピーし、有効時間+3秒後にクリアをスケジュール
 	remaining := time.Duration(entry.RemainingSeconds()+3) * time.Second
-	v.clipboard.Copy(code, remaining)
+	t.clipboard.Copy(code, remaining)
 
 	// トースト通知を表示
 	components.ShowToast(
-		v.app.mainWindow,
+		t.app.mainWindow,
 		lang.L("totp.copied.message"),
 	)
 }
 
 // showEntryMenu はエントリのメニューを表示する
-func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
+func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
 	var items []*fyne.MenuItem
 
 	// 先頭でなければ「上へ移動」を表示
 	if index > 0 {
 		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
-			v.moveEntry(entry.ID, -1)
+			t.moveEntry(entry.ID, -1)
 		}))
 	}
 
 	// 末尾でなければ「下へ移動」を表示
 	if index < total-1 {
 		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
-			v.moveEntry(entry.ID, +1)
+			t.moveEntry(entry.ID, +1)
 		}))
 	}
 
@@ -150,29 +150,29 @@ func (v *totpListView) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasO
 
 	items = append(items,
 		fyne.NewMenuItem(lang.L("totp.menu.edit"), func() {
-			v.showEditDialog(entry)
+			t.showEditDialog(entry)
 		}),
 		fyne.NewMenuItem(lang.L("totp.menu.showqr"), func() {
-			v.showQRCode(entry)
+			t.showQRCode(entry)
 		}),
 		fyne.NewMenuItemSeparator(),
 		fyne.NewMenuItem(lang.L("totp.menu.delete"), func() {
-			v.confirmDelete(entry)
+			t.confirmDelete(entry)
 		}),
 	)
 
 	menu := fyne.NewMenu("", items...)
-	popup := widget.NewPopUpMenu(menu, v.app.mainWindow.Canvas())
+	popup := widget.NewPopUpMenu(menu, t.app.mainWindow.Canvas())
 	rel := fyne.NewPos(anchor.Size().Width/2-popup.Size().Width, anchor.Size().Height/2)
 	popup.ShowAtRelativePosition(rel, anchor)
 }
 
 // moveEntry はエントリを指定方向に移動する（direction: -1=上, +1=下）
-func (v *totpListView) moveEntry(id string, direction int) {
+func (t *totpListTab) moveEntry(id string, direction int) {
 	// 現在のエントリからIDリストを生成
-	ids := make([]string, len(v.entries))
+	ids := make([]string, len(t.entries))
 	targetIdx := -1
-	for i, e := range v.entries {
+	for i, e := range t.entries {
 		ids[i] = e.ID
 		if e.ID == id {
 			targetIdx = i
@@ -191,35 +191,35 @@ func (v *totpListView) moveEntry(id string, direction int) {
 	ids[targetIdx], ids[swapIdx] = ids[swapIdx], ids[targetIdx]
 
 	// 永続化してリスト更新
-	if err := v.store.Reorder(ids); err != nil {
+	if err := t.store.Reorder(ids); err != nil {
 		return
 	}
-	if err := v.store.Save(); err != nil {
+	if err := t.store.Save(); err != nil {
 		return
 	}
-	v.refreshEntries()
+	t.refreshEntries()
 }
 
 // showEditDialog は編集ダイアログを表示する
-func (v *totpListView) showEditDialog(entry *totpstore.Entry) {
-	v.showEntryFormDialog(
+func (t *totpListTab) showEditDialog(entry *totpstore.Entry) {
+	t.showEntryFormDialog(
 		entry,
 		lang.L("totp.edit.title"),
 		lang.L("dialog.save"),
 		func(e *totpstore.Entry) error {
-			return v.store.Update(e)
+			return t.store.Update(e)
 		},
 	)
 }
 
 // showQRCode はQRコードを表示する
-func (v *totpListView) showQRCode(entry *totpstore.Entry) {
+func (t *totpListTab) showQRCode(entry *totpstore.Entry) {
 	uri := entry.ToOTPAuthURI()
 
 	// QRコード生成
 	qr, err := qrscanner.GenerateQRCodeImage(uri)
 	if err != nil {
-		dialog.ShowError(err, v.app.mainWindow)
+		dialog.ShowError(err, t.app.mainWindow)
 		return
 	}
 
@@ -236,12 +236,12 @@ func (v *totpListView) showQRCode(entry *totpstore.Entry) {
 		lang.L("totp.qr.title"),
 		lang.L("dialog.close"),
 		content,
-		v.app.mainWindow,
+		t.app.mainWindow,
 	)
 }
 
 // confirmDelete は削除確認ダイアログを表示する
-func (v *totpListView) confirmDelete(entry *totpstore.Entry) {
+func (t *totpListTab) confirmDelete(entry *totpstore.Entry) {
 	dialog.ShowConfirm(
 		lang.L("totp.delete.title"),
 		lang.L("totp.delete.message", M{"displayName": entry.DisplayName()}),
@@ -249,16 +249,16 @@ func (v *totpListView) confirmDelete(entry *totpstore.Entry) {
 			if !confirmed {
 				return
 			}
-			if err := v.store.Delete(entry.ID); err != nil {
-				dialog.ShowError(err, v.app.mainWindow)
+			if err := t.store.Delete(entry.ID); err != nil {
+				dialog.ShowError(err, t.app.mainWindow)
 				return
 			}
-			if err := v.store.Save(); err != nil {
-				dialog.ShowError(err, v.app.mainWindow)
+			if err := t.store.Save(); err != nil {
+				dialog.ShowError(err, t.app.mainWindow)
 				return
 			}
-			v.refreshEntries()
+			t.refreshEntries()
 		},
-		v.app.mainWindow,
+		t.app.mainWindow,
 	)
 }
