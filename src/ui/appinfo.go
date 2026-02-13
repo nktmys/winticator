@@ -30,7 +30,7 @@ const (
 	licensePageURL       = "https://github.com/nktmys/winticator/tree/main/LICENSE"
 )
 
-// createAppInfoTab はアプリ情報タブのUIを構築する
+// createAppInfoTab はアプリ情報画面のUIを構築する
 func (a *App) createAppInfoTab() fyne.CanvasObject {
 	tab := &appInfoTab{
 		fyneApp:    a.fyneApp,

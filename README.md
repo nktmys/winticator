@@ -36,7 +36,7 @@ not on product differentiation or commercial use.
 - **Google Authenticator Import** — Bulk import entries via `otpauth-migration://` QR codes
 - **Backup & Restore** — Export/import entries using a proprietary password-protected backup file
 - **Fully Offline** — No network communication; all data stays on your machine
-- **Copy to Clipboard** — Tap an OTP code to copy it instantly
+- **Copy to Clipboard** — Tap an entry to copy the OTP code to clipboard; clipboard is automatically cleared after expiry
 - **Show QR Code** — Display any entry as a QR code for transfer to other devices
 
 ---

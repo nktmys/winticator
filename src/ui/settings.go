@@ -13,41 +13,41 @@ import (
 	"github.com/nktmys/winticator/src/usecase/preferences"
 )
 
-// createSettingTab は設定タブのUIを構築する
-func (a *App) createSettingTab() fyne.CanvasObject {
-	tab := &settingTab{
+// createSettingsTab は設定画面のUIを構築する
+func (a *App) createSettingsTab() fyne.CanvasObject {
+	tab := &settingsTab{
 		app:         a,
 		preferences: a.preferences,
-		setting:     a.fyneApp.Settings(),
+		settings:    a.fyneApp.Settings(),
 	}
 
 	// テーマ設定
-	themeLabel := widget.NewLabel(lang.L("setting.theme"))
+	themeLabel := widget.NewLabel(lang.L("settings.theme"))
 
 	// 現在のテーマ設定を取得
 	currentVariant := a.preferences.GetThemeVariant()
 
 	// テーマ選択ラジオボタン
 	themeOptions := []string{
-		lang.L("setting.theme.dark"),
-		lang.L("setting.theme.light"),
+		lang.L("settings.theme.dark"),
+		lang.L("settings.theme.light"),
 	}
 	tab.themeRadio = widget.NewRadioGroup(themeOptions, tab.handleThemeRadio)
 	tab.themeRadio.Horizontal = true
 
 	// 現在の設定を反映
 	if currentVariant == theme.VariantDark {
-		tab.themeRadio.SetSelected(lang.L("setting.theme.dark"))
+		tab.themeRadio.SetSelected(lang.L("settings.theme.dark"))
 	} else {
-		tab.themeRadio.SetSelected(lang.L("setting.theme.light"))
+		tab.themeRadio.SetSelected(lang.L("settings.theme.light"))
 	}
 
 	// 言語設定
-	languageLabel := widget.NewLabel(lang.L("setting.language"))
+	languageLabel := widget.NewLabel(lang.L("settings.language"))
 
 	// 利用可能な言語一覧を取得し、UIオプションを構築
 	tab.locales = append(
-		[]assets.Locale{{Code: "", Name: lang.L("setting.language.system")}},
+		[]assets.Locale{{Code: "", Name: lang.L("settings.language.system")}},
 		assets.AvailableLocales()...,
 	)
 
@@ -59,7 +59,7 @@ func (a *App) createSettingTab() fyne.CanvasObject {
 	tab.languageSelect = widget.NewSelect(languageOptions, tab.handleLanguageSelect)
 
 	// 再起動通知ラベル（SetSelectedより前に初期化する必要がある）
-	tab.restartLabel = widget.NewLabel(lang.L("setting.language.restart"))
+	tab.restartLabel = widget.NewLabel(lang.L("settings.language.restart"))
 	tab.restartLabel.Hide()
 
 	// 現在の言語設定を反映
@@ -74,14 +74,12 @@ func (a *App) createSettingTab() fyne.CanvasObject {
 	}
 
 	// データ管理セクション
-	dataLabel := widget.NewLabel(lang.L("setting.data"))
-	exportButton := widget.NewButton(lang.L("setting.export"), tab.handleExport)
-	importButton := widget.NewButton(lang.L("setting.import"), tab.handleImport)
+	dataLabel := widget.NewLabel(lang.L("settings.data"))
+	exportButton := widget.NewButton(lang.L("settings.export"), tab.handleExport)
+	importButton := widget.NewButton(lang.L("settings.import"), tab.handleImport)
 	dataButtons := container.NewHBox(exportButton, importButton)
 
 	content := container.NewVBox(
-		widget.NewLabel(lang.L("setting.header")),
-		widget.NewSeparator(),
 		themeLabel,
 		tab.themeRadio,
 		widget.NewSeparator(),
@@ -96,11 +94,11 @@ func (a *App) createSettingTab() fyne.CanvasObject {
 	return container.NewPadded(content)
 }
 
-// settingTab は設定タブの状態を保持する
-type settingTab struct {
+// settingsTab は設定タブの状態を保持する
+type settingsTab struct {
 	app            *App
 	preferences    *preferences.Manager
-	setting        fyne.Settings
+	settings       fyne.Settings
 	themeRadio     *widget.RadioGroup
 	languageSelect *widget.Select
 	restartLabel   *widget.Label
@@ -108,7 +106,7 @@ type settingTab struct {
 }
 
 // handleThemeRadio はテーマ変更時の処理を行う
-func (t *settingTab) handleThemeRadio(selected string) {
+func (t *settingsTab) handleThemeRadio(selected string) {
 	index := slices.Index(t.themeRadio.Options, selected)
 	if index < 0 {
 		return
@@ -121,11 +119,11 @@ func (t *settingTab) handleThemeRadio(selected string) {
 	}
 
 	t.preferences.SetThemeVariant(variant)
-	t.setting.SetTheme(custom.NewTheme(variant))
+	t.settings.SetTheme(custom.NewTheme(variant))
 }
 
 // handleLanguageSelect は言語変更時の処理を行う
-func (t *settingTab) handleLanguageSelect(selected string) {
+func (t *settingsTab) handleLanguageSelect(selected string) {
 	index := slices.IndexFunc(t.locales, func(l assets.Locale) bool {
 		return l.Name == selected
 	})

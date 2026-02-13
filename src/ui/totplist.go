@@ -17,9 +17,9 @@ import (
 	"github.com/nktmys/winticator/src/usecase/totpstore"
 )
 
-// createTOTPListView はTOTPリスト画面を作成する
-func (a *App) createTOTPListView() fyne.CanvasObject {
-	view := &totpListView{
+// createTOTPListTab はTOTPリスト画面を作成する
+func (a *App) createTOTPListTab() fyne.CanvasObject {
+	view := &totpListTab{
 		app:       a,
 		store:     a.totpStore,
 		clipboard: a.clipboard,
@@ -70,8 +70,8 @@ func (a *App) createTOTPListView() fyne.CanvasObject {
 	return container.NewPadded(view.container)
 }
 
-// totpListView はTOTPリスト画面の状態を保持する
-type totpListView struct {
+// totpListTab はTOTPリスト画面の状態を保持する
+type totpListTab struct {
 	app       *App
 	store     *totpstore.Store
 	clipboard *clipboard.Manager
@@ -83,28 +83,28 @@ type totpListView struct {
 }
 
 // updateEmptyState は空の状態表示を更新する
-func (v *totpListView) updateEmptyState(emptyLabel *widget.Label) {
-	if len(v.entries) == 0 {
-		v.list.Hide()
+func (t *totpListTab) updateEmptyState(emptyLabel *widget.Label) {
+	if len(t.entries) == 0 {
+		t.list.Hide()
 		emptyLabel.Show()
 	} else {
 		emptyLabel.Hide()
-		v.list.Show()
+		t.list.Show()
 	}
 }
 
 // startRefresh は定期的な画面更新を開始する
-func (v *totpListView) startRefresh() {
-	v.ticker = time.NewTicker(1 * time.Second)
+func (t *totpListTab) startRefresh() {
+	t.ticker = time.NewTicker(1 * time.Second)
 	go func() {
 		for {
 			select {
-			case <-v.ticker.C:
+			case <-t.ticker.C:
 				fyne.Do(func() {
-					v.list.Refresh()
+					t.list.Refresh()
 				})
-			case <-v.stopChan:
-				v.ticker.Stop()
+			case <-t.stopChan:
+				t.ticker.Stop()
 				return
 			}
 		}
@@ -112,20 +112,20 @@ func (v *totpListView) startRefresh() {
 }
 
 // refreshEntries はエントリリストを更新する
-func (v *totpListView) refreshEntries() {
-	v.entries = v.store.GetAll()
-	v.list.Refresh()
+func (t *totpListTab) refreshEntries() {
+	t.entries = t.store.GetAll()
+	t.list.Refresh()
 
 	// 空状態の更新
-	if len(v.container.Objects) >= 2 {
-		if emptyLabel, ok := v.container.Objects[1].(*widget.Label); ok {
-			v.updateEmptyState(emptyLabel)
+	if len(t.container.Objects) >= 2 {
+		if emptyLabel, ok := t.container.Objects[1].(*widget.Label); ok {
+			t.updateEmptyState(emptyLabel)
 		}
 	}
 }
 
 // scanQRCode はQRコードをスキャンしてエントリを追加する
-func (v *totpListView) scanQRCode() {
+func (t *totpListTab) scanQRCode() {
 	go func() {
 		// メインスレッドがHideを処理できるよう待機
 		time.Sleep(500 * time.Millisecond)
@@ -135,8 +135,8 @@ func (v *totpListView) scanQRCode() {
 
 		// UIスレッドでウィンドウ復帰と結果処理
 		fyne.Do(func() {
-			v.app.mainWindow.Show()
-			v.app.mainWindow.RequestFocus()
+			t.app.mainWindow.Show()
+			t.app.mainWindow.RequestFocus()
 
 			if err != nil {
 				var errMsg string
@@ -150,41 +150,41 @@ func (v *totpListView) scanQRCode() {
 				default:
 					errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)
 				}
-				dialog.ShowError(errors.New(errMsg), v.app.mainWindow)
+				dialog.ShowError(errors.New(errMsg), t.app.mainWindow)
 				return
 			}
 
 			if len(results) == 0 {
-				dialog.ShowError(errors.New(lang.L("totp.scan.notfound")), v.app.mainWindow)
+				dialog.ShowError(errors.New(lang.L("totp.scan.notfound")), t.app.mainWindow)
 				return
 			}
 
 			if len(results) == 1 {
-				v.showAddConfirmDialog(results[0].Entry)
+				t.showAddConfirmDialog(results[0].Entry)
 			} else {
-				v.showBatchAddConfirmDialog(results)
+				t.showBatchAddConfirmDialog(results)
 			}
 		})
 	}()
 
 	// goroutine起動後にHide → 関数がすぐにreturnしイベントループがHideを処理
-	v.app.mainWindow.Hide()
+	t.app.mainWindow.Hide()
 }
 
 // showAddConfirmDialog は追加確認ダイアログを表示する
-func (v *totpListView) showAddConfirmDialog(entry *totpstore.Entry) {
-	v.showEntryFormDialog(
+func (t *totpListTab) showAddConfirmDialog(entry *totpstore.Entry) {
+	t.showEntryFormDialog(
 		entry,
 		lang.L("totp.add.title"),
 		lang.L("dialog.add"),
 		func(e *totpstore.Entry) error {
-			return v.store.Add(e)
+			return t.store.Add(e)
 		},
 	)
 }
 
 // showBatchAddConfirmDialog は複数エントリの一括追加確認ダイアログを表示する
-func (v *totpListView) showBatchAddConfirmDialog(results []qrscanner.ScanResult) {
+func (t *totpListTab) showBatchAddConfirmDialog(results []qrscanner.ScanResult) {
 	// エントリ名一覧を作成
 	var names []string
 	for _, r := range results {
@@ -201,28 +201,28 @@ func (v *totpListView) showBatchAddConfirmDialog(results []qrscanner.ScanResult)
 				return
 			}
 			for _, r := range results {
-				if err := v.store.Add(r.Entry); err != nil {
-					dialog.ShowError(err, v.app.mainWindow)
+				if err := t.store.Add(r.Entry); err != nil {
+					dialog.ShowError(err, t.app.mainWindow)
 					return
 				}
 			}
-			if err := v.store.Save(); err != nil {
-				dialog.ShowError(err, v.app.mainWindow)
+			if err := t.store.Save(); err != nil {
+				dialog.ShowError(err, t.app.mainWindow)
 				return
 			}
-			v.refreshEntries()
+			t.refreshEntries()
 			dialog.ShowInformation(
 				lang.L("totp.migration.title"),
 				lang.L("totp.migration.success", M{"Count": count}),
-				v.app.mainWindow,
+				t.app.mainWindow,
 			)
 		},
-		v.app.mainWindow,
+		t.app.mainWindow,
 	)
 }
 
 // showEntryFormDialog はエントリのフォームダイアログを表示する共通ヘルパー
-func (v *totpListView) showEntryFormDialog(
+func (t *totpListTab) showEntryFormDialog(
 	entry *totpstore.Entry,
 	title, confirmLabel string,
 	onSave func(*totpstore.Entry) error,
@@ -248,16 +248,16 @@ func (v *totpListView) showEntryFormDialog(
 			entry.Issuer = issuerEntry.Text
 			entry.Account = accountEntry.Text
 			if err := onSave(entry); err != nil {
-				dialog.ShowError(err, v.app.mainWindow)
+				dialog.ShowError(err, t.app.mainWindow)
 				return
 			}
-			if err := v.store.Save(); err != nil {
-				dialog.ShowError(err, v.app.mainWindow)
+			if err := t.store.Save(); err != nil {
+				dialog.ShowError(err, t.app.mainWindow)
 				return
 			}
-			v.refreshEntries()
+			t.refreshEntries()
 		},
-		v.app.mainWindow,
+		t.app.mainWindow,
 	)
 	form.Resize(fyne.NewSize(400, 200))
 	form.Show()
