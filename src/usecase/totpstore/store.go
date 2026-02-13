@@ -14,14 +14,14 @@ import (
 
 // Store はTOTPエントリの保存・読み込みを管理する
 type Store struct {
-	prefs   *preferences.Preferences
+	prefs   *preferences.Manager
 	entries []*Entry
 	mu      sync.RWMutex
 	loaded  bool
 }
 
 // New は新しいStoreインスタンスを作成する
-func New(prefs *preferences.Preferences) *Store {
+func New(prefs *preferences.Manager) *Store {
 	return &Store{
 		prefs:   prefs,
 		entries: make([]*Entry, 0),

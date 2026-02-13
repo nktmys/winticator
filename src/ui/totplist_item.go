@@ -116,7 +116,7 @@ func (v *totpListView) copyCode(entry *totpstore.Entry) {
 
 	// クリップボードにコピーし、有効時間+3秒後にクリアをスケジュール
 	remaining := time.Duration(entry.RemainingSeconds()+3) * time.Second
-	v.app.clipboard.Copy(code, remaining)
+	v.clipboard.Copy(code, remaining)
 
 	// トースト通知を表示
 	components.ShowToast(

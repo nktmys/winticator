@@ -17,9 +17,7 @@ type Manager struct {
 
 // New は新しいManagerを作成する
 func New(clipboard fyne.Clipboard) *Manager {
-	return &Manager{
-		clipboard: clipboard,
-	}
+	return &Manager{clipboard: clipboard}
 }
 
 // Copy はコードをクリップボードにコピーし、delay後に自動クリアをスケジュールする

@@ -28,42 +28,44 @@ const (
 
 // App はアプリケーションのUI状態を保持する
 type App struct {
-	fyneApp      fyne.App
-	mainWindow   fyne.Window
-	preferences  *preferences.Preferences
-	totpStore    *totpstore.Store
-	totpListView *totpListView
+	fyneApp     fyne.App
+	preferences *preferences.Manager
+	clipboard   *clipboard.Manager
+	totpStore   *totpstore.Store
+	mainWindow  fyne.Window
 
 	// ページコンテナ
 	pageContainer *fyne.Container
 	pages         map[pageID]fyne.CanvasObject
 	currentPage   pageID
 
+	// TOTPリストビュー
+	totpListView *totpListView
+
 	// ツールバーボタン
 	totpButton    *widget.Button
 	settingButton *widget.Button
 	infoButton    *widget.Button
 	addButton     *widget.Button
-
-	// クリップボード管理
-	clipboard *clipboard.Manager
 }
 
 // NewApp は新しいアプリケーションインスタンスを作成する
 func NewApp() *App {
 	fyneApp := app.New()
-	prefs := preferences.New(fyneApp.Preferences())
+	preferences := preferences.New(fyneApp.Preferences())
+	clipboard := clipboard.New(fyneApp.Clipboard())
 
 	// 保存されたテーマ設定を読み込み、なければLightをデフォルトに
-	variant := prefs.GetThemeVariant()
+	variant := preferences.GetThemeVariant()
 	fyneApp.Settings().SetTheme(custom.NewTheme(variant))
 
 	// TOTPストアを作成
-	store := totpstore.New(prefs)
+	store := totpstore.New(preferences)
 
 	return &App{
 		fyneApp:     fyneApp,
-		preferences: prefs,
+		preferences: preferences,
+		clipboard:   clipboard,
 		totpStore:   store,
 		pages:       make(map[pageID]fyne.CanvasObject),
 	}
@@ -83,9 +85,6 @@ func (a *App) Run() {
 
 	content := a.createUI()
 	a.mainWindow.SetContent(content)
-
-	// クリップボードマネージャーを初期化
-	a.clipboard = clipboard.New(a.fyneApp.Clipboard())
 
 	// アプリ終了時にクリップボードをクリア
 	a.mainWindow.SetCloseIntercept(func() {

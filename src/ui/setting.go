@@ -99,7 +99,7 @@ func (a *App) createSettingTab() fyne.CanvasObject {
 // settingTab は設定タブの状態を保持する
 type settingTab struct {
 	app            *App
-	preferences    *preferences.Preferences
+	preferences    *preferences.Manager
 	setting        fyne.Settings
 	themeRadio     *widget.RadioGroup
 	languageSelect *widget.Select
