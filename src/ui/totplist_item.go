@@ -48,11 +48,11 @@ func (t *totpListTab) createListItem() fyne.CanvasObject {
 
 // updateListItem はリストアイテムを更新する
 func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObject) {
-	if id >= len(t.entries) {
+	if id >= len(t.filteredEntries) {
 		return
 	}
 
-	entry := t.entries[id]
+	entry := t.filteredEntries[id]
 	blocker := item.(*components.HoverBlocker)
 	border := blocker.Content.(*fyne.Container)
 
@@ -101,7 +101,7 @@ func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObjec
 	// メニューボタン
 	entryCopy := entry
 	index := id
-	total := len(t.entries)
+	total := len(t.filteredEntries)
 	menuButton.OnTapped = func() {
 		t.showEntryMenu(entryCopy, menuButton, index, total)
 	}

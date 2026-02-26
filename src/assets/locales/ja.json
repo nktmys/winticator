@@ -7,6 +7,7 @@
     "toolbar.settings": "設定",
     "toolbar.info": "情報",
     "toolbar.add": "追加",
+    "totp.search.placeholder": "検索...",
     "totp.empty": "TOTPエントリがありません。\n「追加」をクリックしてQRコードをスキャンしてください。",
     "totp.copied.title": "コピー完了",
     "totp.copied.message": "コードをコピーしました",

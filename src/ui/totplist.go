@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/lang"
 	"fyne.io/fyne/v2/widget"
+	"github.com/nktmys/winticator/src/ui/custom/components"
 	"github.com/nktmys/winticator/src/usecase/clipboard"
 	"github.com/nktmys/winticator/src/usecase/qrscanner"
 	"github.com/nktmys/winticator/src/usecase/totpstore"
@@ -29,11 +30,19 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 
 	// ストアからエントリを読み込み
 	view.entries = view.store.GetAll()
+	view.filteredEntries = make([]*totpstore.Entry, len(view.entries))
+	copy(view.filteredEntries, view.entries)
+
+	// 検索エントリを作成
+	view.searchEntry = components.NewSearchEntry(lang.L("totp.search.placeholder"))
+	view.searchEntry.OnChanged = func(query string) {
+		view.filterEntries(query)
+	}
 
 	// リストを作成
 	view.list = widget.NewList(
 		func() int {
-			return len(view.entries)
+			return len(view.filteredEntries)
 		},
 		func() fyne.CanvasObject {
 			return view.createListItem()
@@ -46,11 +55,11 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 		// 選択・フォーカスを解除
 		view.list.UnselectAll()
 		a.mainWindow.Canvas().Unfocus()
-		if id >= len(view.entries) {
+		if id >= len(view.filteredEntries) {
 			return
 		}
 		// タップでTOTPコードをコピー
-		view.copyCode(view.entries[id])
+		view.copyCode(view.filteredEntries[id])
 	}
 
 	// 空の場合のメッセージ
@@ -58,7 +67,8 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 	emptyLabel.Alignment = fyne.TextAlignCenter
 
 	// コンテナを作成
-	view.container = container.NewStack(view.list, emptyLabel)
+	listStack := container.NewStack(view.list, emptyLabel)
+	view.container = container.NewBorder(view.searchEntry, nil, nil, nil, listStack)
 	view.updateEmptyState(emptyLabel)
 
 	// 定期更新を開始
@@ -72,19 +82,21 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 
 // totpListTab はTOTPリスト画面の状態を保持する
 type totpListTab struct {
-	app       *App
-	store     *totpstore.Store
-	clipboard *clipboard.Manager
-	list      *widget.List
-	entries   []*totpstore.Entry
-	ticker    *time.Ticker
-	stopChan  chan bool
-	container *fyne.Container
+	app             *App
+	store           *totpstore.Store
+	clipboard       *clipboard.Manager
+	list            *widget.List
+	entries         []*totpstore.Entry
+	filteredEntries []*totpstore.Entry
+	searchEntry     *components.SearchEntry
+	ticker          *time.Ticker
+	stopChan        chan bool
+	container       *fyne.Container
 }
 
 // updateEmptyState は空の状態表示を更新する
 func (t *totpListTab) updateEmptyState(emptyLabel *widget.Label) {
-	if len(t.entries) == 0 {
+	if len(t.filteredEntries) == 0 {
 		t.list.Hide()
 		emptyLabel.Show()
 	} else {
@@ -111,17 +123,39 @@ func (t *totpListTab) startRefresh() {
 	}()
 }
 
+// filterEntries は検索クエリに基づいてエントリをフィルタリングする
+func (t *totpListTab) filterEntries(query string) {
+	if query == "" {
+		t.filteredEntries = make([]*totpstore.Entry, len(t.entries))
+		copy(t.filteredEntries, t.entries)
+	} else {
+		q := strings.ToLower(query)
+		t.filteredEntries = make([]*totpstore.Entry, 0)
+		for _, entry := range t.entries {
+			if strings.Contains(strings.ToLower(entry.Issuer), q) ||
+				strings.Contains(strings.ToLower(entry.Account), q) {
+				t.filteredEntries = append(t.filteredEntries, entry)
+			}
+		}
+	}
+	t.list.Refresh()
+
+	// 空状態の更新（BorderレイアウトのCenter要素内のStack）
+	if borderCenter := t.container.Objects[0]; borderCenter != nil {
+		if stack, ok := borderCenter.(*fyne.Container); ok {
+			if len(stack.Objects) >= 2 {
+				if emptyLabel, ok := stack.Objects[1].(*widget.Label); ok {
+					t.updateEmptyState(emptyLabel)
+				}
+			}
+		}
+	}
+}
+
 // refreshEntries はエントリリストを更新する
 func (t *totpListTab) refreshEntries() {
 	t.entries = t.store.GetAll()
-	t.list.Refresh()
-
-	// 空状態の更新
-	if len(t.container.Objects) >= 2 {
-		if emptyLabel, ok := t.container.Objects[1].(*widget.Label); ok {
-			t.updateEmptyState(emptyLabel)
-		}
-	}
+	t.filterEntries(t.searchEntry.Text)
 }
 
 // scanQRCode はQRコードをスキャンしてエントリを追加する

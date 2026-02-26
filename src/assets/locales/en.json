@@ -7,6 +7,7 @@
     "toolbar.settings": "Settings",
     "toolbar.info": "Info",
     "toolbar.add": "Add",
+    "totp.search.placeholder": "Search...",
     "totp.empty": "No TOTP entries.\nClick 'Add' to scan a QR code.",
     "totp.copied.title": "Copied",
     "totp.copied.message": "Code copied to clipboard",
