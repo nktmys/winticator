@@ -123,6 +123,11 @@ func (t *totpListTab) startRefresh() {
 	}()
 }
 
+// isSearching は検索中かどうかを返す
+func (t *totpListTab) isSearching() bool {
+	return t.searchEntry.Text != ""
+}
+
 // filterEntries は検索クエリに基づいてエントリをフィルタリングする
 func (t *totpListTab) filterEntries(query string) {
 	if query == "" {
@@ -139,6 +144,13 @@ func (t *totpListTab) filterEntries(query string) {
 		}
 	}
 	t.list.Refresh()
+
+	// 検索中はAddボタンを無効化
+	if t.isSearching() {
+		t.app.addButton.Disable()
+	} else {
+		t.app.addButton.Enable()
+	}
 
 	// 空状態の更新（BorderレイアウトのCenter要素内のStack）
 	if borderCenter := t.container.Objects[0]; borderCenter != nil {
