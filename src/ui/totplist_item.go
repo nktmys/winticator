@@ -129,23 +129,26 @@ func (t *totpListTab) copyCode(entry *totpstore.Entry) {
 func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
 	var items []*fyne.MenuItem
 
-	// 先頭でなければ「上へ移動」を表示
-	if index > 0 {
-		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
-			t.moveEntry(entry.ID, -1)
-		}))
-	}
+	// 検索中でなければ移動メニューを表示
+	if !t.isSearching() {
+		// 先頭でなければ「上へ移動」を表示
+		if index > 0 {
+			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
+				t.moveEntry(entry.ID, -1)
+			}))
+		}
 
-	// 末尾でなければ「下へ移動」を表示
-	if index < total-1 {
-		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
-			t.moveEntry(entry.ID, +1)
-		}))
-	}
+		// 末尾でなければ「下へ移動」を表示
+		if index < total-1 {
+			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
+				t.moveEntry(entry.ID, +1)
+			}))
+		}
 
-	// 移動メニューがある場合はセパレータを追加
-	if len(items) > 0 {
-		items = append(items, fyne.NewMenuItemSeparator())
+		// 移動メニューがある場合はセパレータを追加
+		if len(items) > 0 {
+			items = append(items, fyne.NewMenuItemSeparator())
+		}
 	}
 
 	items = append(items,
