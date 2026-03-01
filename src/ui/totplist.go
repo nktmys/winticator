@@ -63,13 +63,13 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 	}
 
 	// 空の場合のメッセージ
-	emptyLabel := widget.NewLabel(lang.L("totp.empty"))
-	emptyLabel.Alignment = fyne.TextAlignCenter
+	view.emptyLabel = widget.NewLabel(lang.L("totp.empty"))
+	view.emptyLabel.Alignment = fyne.TextAlignCenter
 
 	// コンテナを作成
-	listStack := container.NewStack(view.list, emptyLabel)
+	listStack := container.NewStack(view.list, view.emptyLabel)
 	view.container = container.NewBorder(view.searchEntry, nil, nil, nil, listStack)
-	view.updateEmptyState(emptyLabel)
+	view.updateEmptyState()
 
 	// 定期更新を開始
 	view.startRefresh()
@@ -89,18 +89,24 @@ type totpListTab struct {
 	entries         []*totpstore.Entry
 	filteredEntries []*totpstore.Entry
 	searchEntry     *components.SearchEntry
+	emptyLabel      *widget.Label
 	ticker          *time.Ticker
 	stopChan        chan bool
 	container       *fyne.Container
 }
 
 // updateEmptyState は空の状態表示を更新する
-func (t *totpListTab) updateEmptyState(emptyLabel *widget.Label) {
+func (t *totpListTab) updateEmptyState() {
 	if len(t.filteredEntries) == 0 {
+		if t.isSearching() {
+			t.emptyLabel.SetText(lang.L("totp.search.empty"))
+		} else {
+			t.emptyLabel.SetText(lang.L("totp.empty"))
+		}
 		t.list.Hide()
-		emptyLabel.Show()
+		t.emptyLabel.Show()
 	} else {
-		emptyLabel.Hide()
+		t.emptyLabel.Hide()
 		t.list.Show()
 	}
 }
@@ -152,16 +158,7 @@ func (t *totpListTab) filterEntries(query string) {
 		t.app.addButton.Enable()
 	}
 
-	// 空状態の更新（BorderレイアウトのCenter要素内のStack）
-	if borderCenter := t.container.Objects[0]; borderCenter != nil {
-		if stack, ok := borderCenter.(*fyne.Container); ok {
-			if len(stack.Objects) >= 2 {
-				if emptyLabel, ok := stack.Objects[1].(*widget.Label); ok {
-					t.updateEmptyState(emptyLabel)
-				}
-			}
-		}
-	}
+	t.updateEmptyState()
 }
 
 // refreshEntries はエントリリストを更新する

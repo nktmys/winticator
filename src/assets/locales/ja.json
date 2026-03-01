@@ -9,6 +9,7 @@
     "toolbar.add": "追加",
     "totp.search.placeholder": "検索...",
     "totp.empty": "TOTPエントリがありません。\n「追加」をクリックしてQRコードをスキャンしてください。",
+    "totp.search.empty": "一致するエントリが見つかりません。",
     "totp.copied.title": "コピー完了",
     "totp.copied.message": "コードをコピーしました",
     "totp.menu.moveup": "上へ移動",

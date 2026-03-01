@@ -9,6 +9,7 @@
     "toolbar.add": "Add",
     "totp.search.placeholder": "Search...",
     "totp.empty": "No TOTP entries.\nClick 'Add' to scan a QR code.",
+    "totp.search.empty": "No matching entries found.",
     "totp.copied.title": "Copied",
     "totp.copied.message": "Code copied to clipboard",
     "totp.menu.moveup": "Move Up",
