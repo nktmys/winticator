@@ -94,7 +94,7 @@ type searchClearIconRenderer struct {
 
 func (r *searchClearIconRenderer) MinSize() fyne.Size {
 	if !r.clearIcon.visible {
-		return fyne.NewSize(0, 0)
+		return fyne.NewSquareSize(0)
 	}
 	iconSize := theme.IconInlineSize()
 	return fyne.NewSquareSize(iconSize + theme.InnerPadding()*2)
@@ -112,11 +112,13 @@ func (r *searchClearIconRenderer) Layout(size fyne.Size) {
 }
 
 func (r *searchClearIconRenderer) Refresh() {
-	if !r.clearIcon.visible {
-		r.icon.Hide()
-	} else {
+	if r.clearIcon.visible {
 		r.icon.Show()
+		// Re-assign the theme resource so the icon color follows dark/light theme changes,
+		// since canvas.Image does not track theme updates on its own.
 		r.icon.Resource = theme.CancelIcon()
+	} else {
+		r.icon.Hide()
 	}
 	r.icon.Refresh()
 }
