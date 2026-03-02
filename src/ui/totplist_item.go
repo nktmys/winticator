@@ -66,6 +66,8 @@ func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObjec
 	rightBox := border.Objects[1].(*fyne.Container)
 	circularProgress := rightBox.Objects[0].(*components.CircularProgress)
 	menuButton := rightBox.Objects[1].(*widget.Button)
+	// テーマ変更時にアイコンが更新されるようにする
+	menuButton.SetIcon(theme.MoreHorizontalIcon())
 
 	// 表示名を設定
 	displayNameLabel.SetText(entry.DisplayName())
