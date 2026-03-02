@@ -4,6 +4,7 @@ package totpstore
 import (
 	"encoding/base64"
 	"encoding/json"
+	"slices"
 	"sort"
 	"sync"
 
@@ -104,8 +105,7 @@ func (s *Store) GetAll() []*Entry {
 	defer s.mu.RUnlock()
 
 	// コピーを返す
-	result := make([]*Entry, len(s.entries))
-	copy(result, s.entries)
+	result := slices.Clone(s.entries)
 
 	// Order順でソート
 	sort.Slice(result, func(i, j int) bool {

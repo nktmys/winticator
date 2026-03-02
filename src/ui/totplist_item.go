@@ -48,11 +48,11 @@ func (t *totpListTab) createListItem() fyne.CanvasObject {
 
 // updateListItem はリストアイテムを更新する
 func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObject) {
-	if id >= len(t.entries) {
+	if id >= len(t.filteredEntries) {
 		return
 	}
 
-	entry := t.entries[id]
+	entry := t.filteredEntries[id]
 	blocker := item.(*components.HoverBlocker)
 	border := blocker.Content.(*fyne.Container)
 
@@ -66,6 +66,8 @@ func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObjec
 	rightBox := border.Objects[1].(*fyne.Container)
 	circularProgress := rightBox.Objects[0].(*components.CircularProgress)
 	menuButton := rightBox.Objects[1].(*widget.Button)
+	// テーマ変更時にアイコンが更新されるようにする
+	menuButton.SetIcon(theme.MoreHorizontalIcon())
 
 	// 表示名を設定
 	displayNameLabel.SetText(entry.DisplayName())
@@ -101,7 +103,7 @@ func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObjec
 	// メニューボタン
 	entryCopy := entry
 	index := id
-	total := len(t.entries)
+	total := len(t.filteredEntries)
 	menuButton.OnTapped = func() {
 		t.showEntryMenu(entryCopy, menuButton, index, total)
 	}
@@ -129,23 +131,26 @@ func (t *totpListTab) copyCode(entry *totpstore.Entry) {
 func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
 	var items []*fyne.MenuItem
 
-	// 先頭でなければ「上へ移動」を表示
-	if index > 0 {
-		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
-			t.moveEntry(entry.ID, -1)
-		}))
-	}
+	// 検索中でなければ移動メニューを表示
+	if !t.isSearching() {
+		// 先頭でなければ「上へ移動」を表示
+		if index > 0 {
+			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
+				t.moveEntry(entry.ID, -1)
+			}))
+		}
 
-	// 末尾でなければ「下へ移動」を表示
-	if index < total-1 {
-		items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
-			t.moveEntry(entry.ID, +1)
-		}))
-	}
+		// 末尾でなければ「下へ移動」を表示
+		if index < total-1 {
+			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
+				t.moveEntry(entry.ID, +1)
+			}))
+		}
 
-	// 移動メニューがある場合はセパレータを追加
-	if len(items) > 0 {
-		items = append(items, fyne.NewMenuItemSeparator())
+		// 移動メニューがある場合はセパレータを追加
+		if len(items) > 0 {
+			items = append(items, fyne.NewMenuItemSeparator())
+		}
 	}
 
 	items = append(items,
