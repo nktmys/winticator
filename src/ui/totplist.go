@@ -3,6 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -30,8 +31,7 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 
 	// ストアからエントリを読み込み
 	view.entries = view.store.GetAll()
-	view.filteredEntries = make([]*totpstore.Entry, len(view.entries))
-	copy(view.filteredEntries, view.entries)
+	view.filteredEntries = slices.Clone(view.entries)
 
 	// 検索エントリを作成
 	view.searchEntry = components.NewSearchEntry(lang.L("totp.search.placeholder"))
@@ -136,19 +136,17 @@ func (t *totpListTab) isSearching() bool {
 
 // filterEntries は検索クエリに基づいてエントリをフィルタリングする
 func (t *totpListTab) filterEntries(query string) {
-	if query == "" {
-		t.filteredEntries = make([]*totpstore.Entry, len(t.entries))
-		copy(t.filteredEntries, t.entries)
-	} else {
+	t.filteredEntries = slices.Clone(t.entries)
+	if query != "" {
 		q := strings.ToLower(query)
-		t.filteredEntries = make([]*totpstore.Entry, 0)
-		for _, entry := range t.entries {
-			if strings.Contains(strings.ToLower(entry.Issuer), q) ||
-				strings.Contains(strings.ToLower(entry.Account), q) {
-				t.filteredEntries = append(t.filteredEntries, entry)
-			}
-		}
+		t.filteredEntries = slices.DeleteFunc(t.filteredEntries, func(entry *totpstore.Entry) bool {
+			issuer := strings.ToLower(entry.Issuer)
+			account := strings.ToLower(entry.Account)
+			return !strings.Contains(issuer, q) && !strings.Contains(account, q)
+		})
 	}
+
+	// フィルタリング後にリストを更新
 	t.list.Refresh()
 
 	// 検索中はAddボタンを無効化
@@ -158,6 +156,7 @@ func (t *totpListTab) filterEntries(query string) {
 		t.app.addButton.Enable()
 	}
 
+	// 空の状態を更新
 	t.updateEmptyState()
 }
 
