@@ -15,6 +15,10 @@ English | [日本語](./README-ja.md)
 This project is intended as a **technical demonstration** of how to build and distribute
 a standalone, cross-platform desktop application based on open standards.
 
+<p align="center">
+  <img src="./images/ss-top-register.gif" alt="Winticator demo" width="400">
+</p>
+
 ---
 
 ## Overview
@@ -61,7 +65,7 @@ not on product differentiation or commercial use.
 
 | App Info | Export |
 |:--------:|:------:|
-| <img src="./images/ss-03-appinfo.png" alt="App Info" width="350"> | <img src="./images/ss-04-export.png" alt="Export" width="350"> |
+| <img src="./images/ss-03-appinfo.png" alt="App Info" width="350"> | <img src="./images/ss-04-qrcode.png" alt="QR Code" width="350"> |
 
 ---
 
