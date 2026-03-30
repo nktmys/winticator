@@ -7,7 +7,7 @@ mod build 'just/build.just'
 mod protobuf 'just/protobuf.just'
 
 lint:
-    go fmt ./...
+    gofumpt -w .
     go mod tidy
     staticcheck ./...
 
@@ -16,4 +16,4 @@ test:
 
 vuln:
     GOMEMLIMIT=256MiB govulncheck ./...
-    trivy fs --quiet --config trivy/trivy.yaml ./
+    trivy fs --quiet --config .trivy/trivy.yaml ./
