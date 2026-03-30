@@ -1,11 +1,11 @@
-FROM golang:1.25
+FROM golang:1.26
 
 ARG USERNAME=develop
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 RUN apt-get update && \
-  apt-get install -y --no-install-recommends sudo \
+  apt-get install -y --no-install-recommends sudo jq \
     libgl1-mesa-dev xorg-dev libxkbcommon-dev xz-utils \
     apt-transport-https ca-certificates gnupg && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
