@@ -7,7 +7,7 @@
     "ghcr.io/devcontainers/features/desktop-lite:1": {}
   },
   "workspaceFolder": "/app",
-  "postCreateCommand": "just install && git config --global --add safe.directory ${containerWorkspaceFolder}",
+  "postCreateCommand": "just install",
   "waitFor": "postCreateCommand",
   "customizations": {
     "vscode": {
