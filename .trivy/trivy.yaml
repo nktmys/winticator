@@ -2,7 +2,7 @@
 
 # 脆弱性診断ツール trivy
 # Run Command:
-#   trivy fs --config trivy/trivy.yaml --severity=UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL ./
+#   trivy fs --config .trivy/trivy.yaml --severity=UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL ./
 # Refer:
 #   https://github.com/aquasecurity/trivy
 
@@ -15,7 +15,7 @@
 cache:
   dir: .cache/trivy
 
-ignorefile: trivy/.trivyignore.yaml
+ignorefile: .trivy/.trivyignore.yaml
 
 exit-code: 1
 
