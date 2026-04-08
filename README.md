@@ -77,6 +77,7 @@ Download binaries for your platform from the [Releases](https://github.com/nktmy
 |----------|--------------|------|
 | Windows | x64 (amd64) | `winticator-windows.zip` |
 | macOS | Apple Silicon (arm64) | `winticator-macos.zip` |
+| macOS | Intel (amd64) | `winticator-macos-intel.zip` |
 | Linux | x64 (amd64) | `winticator-linux.tar.xz` |
 
 **If you need binaries for other architectures, feel free to open an [issue](https://github.com/nktmys/winticator/issues).**
