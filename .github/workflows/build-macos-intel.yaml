@@ -1,4 +1,4 @@
-name: Build for macOS (Apple Silicon)
+name: Build for macOS (Intel)
 
 on:
   push:
@@ -8,12 +8,12 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     permissions:
       contents: write
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      ARCHIVE_NAME: winticator-macos.zip
+      ARCHIVE_NAME: winticator-macos-intel.zip
 
     steps:
       - uses: actions/checkout@v5
