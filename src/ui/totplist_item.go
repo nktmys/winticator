@@ -53,19 +53,19 @@ func (t *totpListTab) updateListItem(id widget.ListItemID, item fyne.CanvasObjec
 	}
 
 	entry := t.filteredEntries[id]
-	blocker := item.(*components.HoverBlocker)
-	border := blocker.Content.(*fyne.Container)
+	blocker, _ := item.(*components.HoverBlocker)
+	border, _ := blocker.Content.(*fyne.Container)
 
 	// 左側のコンテンツを取得
-	leftContent := border.Objects[0].(*fyne.Container)
-	displayNameLabel := leftContent.Objects[0].(*widget.Label)
-	paddedCode := leftContent.Objects[1].(*fyne.Container)
-	codeText := paddedCode.Objects[1].(*components.StyledText)
+	leftContent, _ := border.Objects[0].(*fyne.Container)
+	displayNameLabel, _ := leftContent.Objects[0].(*widget.Label)
+	paddedCode, _ := leftContent.Objects[1].(*fyne.Container)
+	codeText, _ := paddedCode.Objects[1].(*components.StyledText)
 
 	// 右側のコンテンツを取得
-	rightBox := border.Objects[1].(*fyne.Container)
-	circularProgress := rightBox.Objects[0].(*components.CircularProgress)
-	menuButton := rightBox.Objects[1].(*widget.Button)
+	rightBox, _ := border.Objects[1].(*fyne.Container)
+	circularProgress, _ := rightBox.Objects[0].(*components.CircularProgress)
+	menuButton, _ := rightBox.Objects[1].(*widget.Button)
 	// テーマ変更時にアイコンが更新されるようにする
 	menuButton.SetIcon(theme.MoreHorizontalIcon())
 

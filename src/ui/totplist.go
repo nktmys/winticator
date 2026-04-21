@@ -182,12 +182,12 @@ func (t *totpListTab) scanQRCode() {
 
 			if err != nil {
 				var errMsg string
-				switch err {
-				case qrscanner.ErrNoQRCodeFound:
+				switch {
+				case errors.Is(err, qrscanner.ErrNoQRCodeFound):
 					errMsg = lang.L("totp.scan.notfound")
-				case qrscanner.ErrNoTOTPQRFound:
+				case errors.Is(err, qrscanner.ErrNoTOTPQRFound):
 					errMsg = lang.L("totp.scan.nottotp")
-				case totpstore.ErrNoTOTPEntries:
+				case errors.Is(err, totpstore.ErrNoTOTPEntries):
 					errMsg = lang.L("totp.scan.nomigrationtotp")
 				default:
 					errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)

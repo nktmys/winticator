@@ -2,6 +2,7 @@ package totpstore
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 
 	"github.com/nktmys/winticator/src/usecase/totpstore/migration"
@@ -184,7 +185,7 @@ func TestParseOTPAuthMigrationURI_InvalidProtobuf(t *testing.T) {
 	// protobufのパースは寛容なため、エラーにならない場合がある
 	// ただしTOTPエントリがなければErrNoTOTPEntriesになる
 	if err != nil {
-		assert.True(t, err == ErrInvalidMigrationData || err == ErrNoTOTPEntries)
+		assert.True(t, errors.Is(err, ErrInvalidMigrationData) || errors.Is(err, ErrNoTOTPEntries))
 	}
 }
 
