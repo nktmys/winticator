@@ -1,4 +1,3 @@
-// Package totpstore はTOTPエントリの管理と暗号化保存を提供する
 package totpstore
 
 import (
