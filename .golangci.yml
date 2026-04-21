@@ -11,27 +11,26 @@ linters:
     - cyclop
     - dogsled
     - durationcheck
-    # - errcheck
-    # - errname
-    # - errorlint
+    - errcheck
+    - errorlint
     - exhaustive
     - exptostd
     - forbidigo
-    # - forcetypeassert
+    - forcetypeassert
     - gocheckcompilerdirectives
     - gochecknoinits
-    # - goconst
-    # - godoclint
+    - goconst
+    - godoclint
     - gomoddirectives
     - goprintffuncname
-    # - gosec
+    - gosec
     - govet
     - grouper
     - iface
     - importas
     - inamedparam
     - ineffassign
-    # - intrange
+    - intrange
     - iotamixing
     - makezero
     - mirror
@@ -40,17 +39,16 @@ linters:
     - nakedret
     - nilnesserr
     - nilnil
-    # - noctx
     - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    # - perfsprint
-    # - prealloc
+    - perfsprint
+    - prealloc
     - predeclared
     - reassign
     - recvcheck
     - staticcheck
-    # - testifylint
+    - testifylint
     - thelper
     - tparallel
     - unconvert
@@ -81,6 +79,26 @@ linters:
     presets:
       - common-false-positives
       - std-error-handling
+    rules:
+      # RFC 6238 TOTP は SHA1 必須 / Unix 時刻は常に非負
+      - path: src/pkg/totp/totp\.go
+        linters: [gosec]
+        text: "G505|G115"
+      # TOTP シークレットの JSON マーシャル（直後に AES-256-GCM で暗号化）
+      - path: src/usecase/totpstore/store\.go
+        linters: [gosec]
+        text: "G117"
+      - path: src/ui/settings_data\.go
+        linters: [gosec]
+        text: "G117"
+      # fyne.ThemeVariant は序数値のみを取る
+      - path: src/usecase/preferences/preferences\.go
+        linters: [gosec]
+        text: "G115"
+      # テストベクタ / テスト用パスワード
+      - path: _test\.go
+        linters: [gosec]
+        text: "G101"
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
