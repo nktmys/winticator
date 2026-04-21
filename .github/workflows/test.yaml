@@ -2,53 +2,49 @@ name: Test Go Code
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-    test:
-      runs-on: ubuntu-latest
-      steps:
+  test:
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
           check-latest: true
 
-      - name: Install Fyne dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends libgl1-mesa-dev xorg-dev libxkbcommon-dev
-
-      - name: Cache Go tools
-        uses: actions/cache@v4
-        with:
-          path: |
-            /usr/local/bin/govulncheck
-          key: ${{ runner.os }}-go-tools-${{ hashFiles('**/go.mod') }}
-
-      - name: Install go tools
-        run: |
-          if ! command -v govulncheck &> /dev/null; then
-            go install golang.org/x/vuln/cmd/govulncheck@latest
-          fi
-        env:
-          GOBIN: /usr/local/bin
+      - uses: ./.github/actions/setup-fyne-linux-deps
 
       - run: go mod download
 
       - name: Lint (golangci-lint)
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
           args: --timeout=10m
 
-      - name: Run Vulnerability Check (govulncheck)
+      - name: Vulnerability check (govulncheck)
         run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
 
-      - name: Run Tests
-        run: |
-          go test ./... -failfast -coverprofile=coverage.out
+      - name: Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          scan-type: fs
+          trivy-config: .trivy/trivy.yaml
+
+      - name: Tests
+        run: go test ./... -failfast

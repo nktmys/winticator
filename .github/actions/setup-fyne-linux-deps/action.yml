@@ -1,0 +1,12 @@
+name: Setup Fyne Linux dependencies
+description: Install system packages required to build Fyne applications on Ubuntu runners.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Fyne Linux dependencies
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install --no-install-recommends \
+          libgl1-mesa-dev xorg-dev libxkbcommon-dev

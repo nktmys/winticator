@@ -22,10 +22,7 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Install Fyne dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends libgl1-mesa-dev xorg-dev libxkbcommon-dev
+      - uses: ./.github/actions/setup-fyne-linux-deps
 
       - name: Install fyne tool
         run: go install fyne.io/tools/cmd/fyne@latest
