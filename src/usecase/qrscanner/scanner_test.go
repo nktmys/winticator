@@ -17,7 +17,7 @@ import (
 // generateQRImage はテスト用にQRコード画像を生成する
 func generateQRImage(content string) (image.Image, error) {
 	writer := qrcode.NewQRCodeWriter()
-	hints := make(map[gozxing.EncodeHintType]interface{})
+	hints := make(map[gozxing.EncodeHintType]any)
 
 	matrix, err := writer.Encode(content, gozxing.BarcodeFormat_QR_CODE, 200, 200, hints)
 	if err != nil {
@@ -28,8 +28,10 @@ func generateQRImage(content string) (image.Image, error) {
 	bounds := image.Rect(0, 0, matrix.GetWidth(), matrix.GetHeight())
 	img := image.NewRGBA(bounds)
 
-	for y := 0; y < matrix.GetHeight(); y++ {
-		for x := 0; x < matrix.GetWidth(); x++ {
+	height := matrix.GetHeight()
+	width := matrix.GetWidth()
+	for y := range height {
+		for x := range width {
 			if matrix.Get(x, y) {
 				img.Set(x, y, color.Black)
 			} else {
@@ -74,8 +76,8 @@ func TestScanImage_NoQRCode(t *testing.T) {
 	img := image.NewRGBA(image.Rect(0, 0, 100, 100))
 
 	// 白で塗りつぶし
-	for y := 0; y < 100; y++ {
-		for x := 0; x < 100; x++ {
+	for y := range 100 {
+		for x := range 100 {
 			img.Set(x, y, color.White)
 		}
 	}

@@ -10,6 +10,8 @@ import (
 	"github.com/rs/xid"
 )
 
+const algorithmSHA1 = "SHA1"
+
 // Entry はTOTPエントリを表す構造体
 type Entry struct {
 	ID        string    `json:"id"`         // UUID
@@ -30,7 +32,7 @@ func NewEntry(issuer string, account string, secret string) *Entry {
 		Issuer:    issuer,
 		Account:   account,
 		Secret:    secret,
-		Algorithm: "SHA1",
+		Algorithm: algorithmSHA1,
 		Digits:    6,
 		Period:    30,
 		Order:     0,
@@ -83,7 +85,7 @@ func ParseOTPAuthURI(uri string) (*Entry, error) {
 	// デフォルト値を設定
 	algorithm := query.Get("algorithm")
 	if algorithm == "" {
-		algorithm = "SHA1"
+		algorithm = algorithmSHA1
 	}
 
 	digits := 6
@@ -129,7 +131,7 @@ func (e *Entry) ToOTPAuthURI() string {
 	if e.Issuer != "" {
 		params.Set("issuer", e.Issuer)
 	}
-	if e.Algorithm != "SHA1" {
+	if e.Algorithm != algorithmSHA1 {
 		params.Set("algorithm", e.Algorithm)
 	}
 	if e.Digits != 6 {
