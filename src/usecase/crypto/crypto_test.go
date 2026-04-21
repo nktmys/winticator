@@ -193,7 +193,7 @@ func TestGUIDValue(t *testing.T) {
 		0x00, 0x00, 0x00, 0x01, // リビジョン1
 	}
 	assert.Equal(t, expected, GUID[:])
-	assert.Equal(t, 16, len(GUID))
+	assert.Len(t, GUID, 16)
 }
 
 func TestMinDataSize(t *testing.T) {

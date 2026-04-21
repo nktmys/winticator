@@ -1,0 +1,110 @@
+version: "2"
+run:
+  modules-download-mode: readonly
+linters:
+  default: none
+  enable:
+    - asasalint
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - cyclop
+    - dogsled
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exhaustive
+    - exptostd
+    - forbidigo
+    - forcetypeassert
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    - goconst
+    - godoclint
+    - gomoddirectives
+    - goprintffuncname
+    - gosec
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    - intrange
+    - iotamixing
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilnesserr
+    - nilnil
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - perfsprint
+    - prealloc
+    - predeclared
+    - reassign
+    - recvcheck
+    - staticcheck
+    - testifylint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    cyclop:
+      max-complexity: 12
+      package-average: 6.0
+    exhaustive:
+      default-signifies-exhaustive: true
+    gosec:
+      excludes:
+        - G104
+    testifylint:
+      enable-all: true
+    staticcheck:
+      initialisms: ["ACL", "API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "QPS", "RAM", "RPC", "SLA", "SMTP", "SQL", "SSH", "TCP", "TLS", "TTL", "UDP", "UI", "GID", "UID", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XMPP", "XSRF", "XSS", "SIP", "RTP", "AMQP", "DB", "TS", "RFC", "AES", "RSA", "MLKEM", "TOTP"]
+      checks:
+        - all
+        - -ST1000
+  exclusions:
+    generated: strict
+    presets:
+      - common-false-positives
+      - std-error-handling
+    rules:
+      # RFC 6238 TOTP は SHA1 必須 / Unix 時刻は常に非負
+      - path: src/pkg/totp/totp\.go
+        linters: [gosec]
+        text: "G505|G115"
+      # TOTP シークレットの JSON マーシャル（直後に AES-256-GCM で暗号化）
+      - path: src/usecase/totpstore/store\.go
+        linters: [gosec]
+        text: "G117"
+      - path: src/ui/settings_data\.go
+        linters: [gosec]
+        text: "G117"
+      # fyne.ThemeVariant は序数値のみを取る
+      - path: src/usecase/preferences/preferences\.go
+        linters: [gosec]
+        text: "G115"
+      # テストベクタ / テスト用パスワード
+      - path: _test\.go
+        linters: [gosec]
+        text: "G101"
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+  settings:
+    gofumpt:
+      extra-rules: false

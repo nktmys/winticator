@@ -182,12 +182,12 @@ func (t *totpListTab) scanQRCode() {
 
 			if err != nil {
 				var errMsg string
-				switch err {
-				case qrscanner.ErrNoQRCodeFound:
+				switch {
+				case errors.Is(err, qrscanner.ErrNoQRCodeFound):
 					errMsg = lang.L("totp.scan.notfound")
-				case qrscanner.ErrNoTOTPQRFound:
+				case errors.Is(err, qrscanner.ErrNoTOTPQRFound):
 					errMsg = lang.L("totp.scan.nottotp")
-				case totpstore.ErrNoTOTPEntries:
+				case errors.Is(err, totpstore.ErrNoTOTPEntries):
 					errMsg = lang.L("totp.scan.nomigrationtotp")
 				default:
 					errMsg = fmt.Sprintf("%s: %v", lang.L("totp.scan.error"), err)
@@ -228,9 +228,9 @@ func (t *totpListTab) showAddConfirmDialog(entry *totpstore.Entry) {
 // showBatchAddConfirmDialog は複数エントリの一括追加確認ダイアログを表示する
 func (t *totpListTab) showBatchAddConfirmDialog(results []qrscanner.ScanResult) {
 	// エントリ名一覧を作成
-	var names []string
-	for _, r := range results {
-		names = append(names, "- "+r.Entry.DisplayName())
+	names := make([]string, len(results))
+	for i, r := range results {
+		names[i] = "- " + r.Entry.DisplayName()
 	}
 	count := strconv.Itoa(len(results))
 	message := lang.L("totp.migration.confirm", M{"Count": count}) + "\n\n" + strings.Join(names, "\n")

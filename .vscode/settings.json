@@ -1,24 +1,28 @@
 {
-    "terminal.integrated.detectLocale": "off",
-    "go.toolsManagement.checkForUpdates": "local",
-    "go.useLanguageServer": true,
-    "go.alternateTools": {
-        "go-langserver": "gopls"
-    },
-    "editor.formatOnSave": false,
-    "[go]": {
-        "editor.formatOnSave": true,
-        "editor.codeActionsOnSave": {
-            "source.organizeImports": "always"
-        }
-    },
-    "gopls": {
-        "ui.diagnostic.staticcheck": true,
-        "ui.diagnostic.analyses":{
-            "ST1000": false,
-        },
-        "ui.codelenses": {
-            "run_vulncheck_exp": true
-        }
+  "terminal.integrated.detectLocale": "off",
+  "go.lintTool": "golangci-lint",
+  "go.lintFlags": ["--path-mode=abs", "--fast-only"],
+  "go.toolsManagement.checkForUpdates": "local",
+  "go.useLanguageServer": true,
+  "go.alternateTools": {
+    "go-langserver": "gopls"
+  },
+  "editor.formatOnSave": false,
+  "[go]": {
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
     }
+  },
+  "gopls": {
+    "formatting.gofumpt": true,
+    "ui.semanticTokens": true,
+    "ui.diagnostic.staticcheck": true,
+    "ui.diagnostic.analyses":{
+      "ST1000": false,
+    },
+    "ui.codelenses": {
+      "run_vulncheck_exp": true
+    }
+  }
 }

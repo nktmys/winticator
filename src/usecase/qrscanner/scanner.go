@@ -113,7 +113,7 @@ var scaleFactors = []float64{1.0, 0.4, 0.6}
 
 var (
 	qrReader = qrcode.NewQRCodeReader()
-	qrHints  = map[gozxing.DecodeHintType]interface{}{
+	qrHints  = map[gozxing.DecodeHintType]any{
 		gozxing.DecodeHintType_TRY_HARDER: true,
 	}
 )
