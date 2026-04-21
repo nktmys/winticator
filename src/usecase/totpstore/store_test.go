@@ -254,7 +254,8 @@ func TestStore_Update(t *testing.T) {
 
 	prefs := preferences.New(newMockPreferences())
 	store := New(prefs)
-	store.Load()
+	err := store.Load()
+	require.NoError(t, err)
 
 	entry := &Entry{
 		ID:      "test-id-1",
@@ -262,11 +263,12 @@ func TestStore_Update(t *testing.T) {
 		Account: "user",
 		Secret:  "SECRET",
 	}
-	store.Add(entry)
+	err = store.Add(entry)
+	require.NoError(t, err)
 
 	// 更新
 	entry.Issuer = "NewName"
-	err := store.Update(entry)
+	err = store.Update(entry)
 	require.NoError(t, err)
 
 	got, err := store.Get("test-id-1")
@@ -279,7 +281,8 @@ func TestStore_Delete(t *testing.T) {
 
 	prefs := preferences.New(newMockPreferences())
 	store := New(prefs)
-	store.Load()
+	err := store.Load()
+	require.NoError(t, err)
 
 	entry := &Entry{
 		ID:      "test-id-1",
@@ -287,11 +290,12 @@ func TestStore_Delete(t *testing.T) {
 		Account: "user",
 		Secret:  "SECRET",
 	}
-	store.Add(entry)
+	err = store.Add(entry)
+	require.NoError(t, err)
 	assert.Equal(t, 1, store.Count())
 
 	// 削除
-	err := store.Delete("test-id-1")
+	err = store.Delete("test-id-1")
 	require.NoError(t, err)
 	assert.Equal(t, 0, store.Count())
 
@@ -305,20 +309,22 @@ func TestStore_Reorder(t *testing.T) {
 
 	prefs := preferences.New(newMockPreferences())
 	store := New(prefs)
-	store.Load()
+	err := store.Load()
+	require.NoError(t, err)
 
 	// 3つのエントリを追加
 	for i := 1; i <= 3; i++ {
-		store.Add(&Entry{
+		err := store.Add(&Entry{
 			ID:      "id-" + string(rune('0'+i)),
 			Issuer:  "Test",
 			Account: "user",
 			Secret:  "SECRET",
 		})
+		require.NoError(t, err)
 	}
 
 	// 順序を変更: 3, 1, 2
-	err := store.Reorder([]string{"id-3", "id-1", "id-2"})
+	err = store.Reorder([]string{"id-3", "id-1", "id-2"})
 	require.NoError(t, err)
 
 	entries := store.GetAll()
@@ -332,7 +338,8 @@ func TestStore_GetAll_Sorted(t *testing.T) {
 
 	prefs := preferences.New(newMockPreferences())
 	store := New(prefs)
-	store.Load()
+	err := store.Load()
+	require.NoError(t, err)
 
 	// 順序を明示的に設定して追加
 	entries := []*Entry{

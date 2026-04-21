@@ -174,7 +174,7 @@ func (t *appInfoTab) handleLicenseButton() {
 // openURL は指定されたURLを開く
 func (t *appInfoTab) openURL(u string) {
 	parsedURL, _ := url.Parse(u)
-	t.fyneApp.OpenURL(parsedURL)
+	_ = t.fyneApp.OpenURL(parsedURL)
 }
 
 // GitHubReleaseResponse はGitHub APIからのリリース情報
