@@ -1,0 +1,92 @@
+version: "2"
+run:
+  modules-download-mode: readonly
+linters:
+  default: none
+  enable:
+    - asasalint
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - cyclop
+    - dogsled
+    - durationcheck
+    # - errcheck
+    # - errname
+    # - errorlint
+    - exhaustive
+    - exptostd
+    - forbidigo
+    # - forcetypeassert
+    - gocheckcompilerdirectives
+    - gochecknoinits
+    # - goconst
+    # - godoclint
+    - gomoddirectives
+    - goprintffuncname
+    # - gosec
+    - govet
+    - grouper
+    - iface
+    - importas
+    - inamedparam
+    - ineffassign
+    # - intrange
+    - iotamixing
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nilnesserr
+    - nilnil
+    # - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    # - perfsprint
+    # - prealloc
+    - predeclared
+    - reassign
+    - recvcheck
+    - staticcheck
+    # - testifylint
+    - thelper
+    - tparallel
+    - unconvert
+    - unparam
+    - unused
+    - usestdlibvars
+    - usetesting
+    - wastedassign
+    - whitespace
+  settings:
+    cyclop:
+      max-complexity: 12
+      package-average: 6.0
+    exhaustive:
+      default-signifies-exhaustive: true
+    gosec:
+      excludes:
+        - G104
+    testifylint:
+      enable-all: true
+    staticcheck:
+      initialisms: ["ACL", "API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP", "HTTPS", "ID", "IP", "JSON", "QPS", "RAM", "RPC", "SLA", "SMTP", "SQL", "SSH", "TCP", "TLS", "TTL", "UDP", "UI", "GID", "UID", "UUID", "URI", "URL", "UTF8", "VM", "XML", "XMPP", "XSRF", "XSS", "SIP", "RTP", "AMQP", "DB", "TS", "RFC", "AES", "RSA", "MLKEM", "TOTP"]
+      checks:
+        - all
+        - -ST1000
+  exclusions:
+    generated: strict
+    presets:
+      - common-false-positives
+      - std-error-handling
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofumpt
+  settings:
+    gofumpt:
+      extra-rules: false

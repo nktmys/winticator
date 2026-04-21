@@ -27,7 +27,6 @@ jobs:
         with:
           path: |
             /usr/local/bin/govulncheck
-            /usr/local/bin/staticcheck
           key: ${{ runner.os }}-go-tools-${{ hashFiles('**/go.mod') }}
 
       - name: Install go tools
@@ -35,17 +34,19 @@ jobs:
           if ! command -v govulncheck &> /dev/null; then
             go install golang.org/x/vuln/cmd/govulncheck@latest
           fi
-          if ! command -v staticcheck &> /dev/null; then
-            go install honnef.co/go/tools/cmd/staticcheck@latest
-          fi
         env:
           GOBIN: /usr/local/bin
 
       - run: go mod download
 
-      - name: Run Static Analysis
+      - name: Lint (golangci-lint)
+        uses: golangci/golangci-lint-action@v7
+        with:
+          version: latest
+          args: --timeout=10m
+
+      - name: Run Vulnerability Check (govulncheck)
         run: |
-          staticcheck ./...
           govulncheck ./...
 
       - name: Run Tests

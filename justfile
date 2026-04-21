@@ -7,9 +7,8 @@ mod build 'just/build.just'
 mod protobuf 'just/protobuf.just'
 
 lint:
-    gofumpt -w .
-    go mod tidy
-    staticcheck ./...
+    golangci-lint fmt ./...
+    golangci-lint run ./...
 
 test:
     go test ./... -failfast
