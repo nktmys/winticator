@@ -3,6 +3,8 @@ package machinekey
 
 import (
 	"crypto/sha256"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"sync"
 
@@ -63,7 +65,7 @@ func getCPUID() (string, error) {
 	}
 
 	if len(infos) == 0 {
-		return "", fmt.Errorf("no CPU info available")
+		return "", errors.New("no CPU info available")
 	}
 
 	// CPU情報から一意の識別子を生成
@@ -79,7 +81,7 @@ func getCPUID() (string, error) {
 
 	// SHA-256でハッシュ化して固定長の識別子を生成
 	hash := sha256.Sum256([]byte(combined))
-	return fmt.Sprintf("%x", hash), nil
+	return hex.EncodeToString(hash[:]), nil
 }
 
 // ResetCache はキャッシュをリセットする（テスト用）

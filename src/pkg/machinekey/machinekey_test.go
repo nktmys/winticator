@@ -54,5 +54,5 @@ func TestKeySize(t *testing.T) {
 	require.NoError(t, err)
 
 	// AES-256に必要な32バイトであることを確認
-	assert.Equal(t, 32, len(key), "Key must be 32 bytes for AES-256")
+	assert.Len(t, key, 32, "Key must be 32 bytes for AES-256")
 }

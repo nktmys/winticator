@@ -37,7 +37,7 @@ func TestClear_ClearsMatchingContent(t *testing.T) {
 
 	m.Clear()
 
-	assert.Equal(t, "", clip.Content())
+	assert.Empty(t, clip.Content())
 }
 
 func TestClear_SkipsWhenContentChanged(t *testing.T) {
@@ -71,7 +71,7 @@ func TestCopy_AutoClearAfterDelay(t *testing.T) {
 
 	time.Sleep(150 * time.Millisecond)
 
-	assert.Equal(t, "", clip.Content())
+	assert.Empty(t, clip.Content())
 }
 
 func TestCopy_AutoClearSkipsWhenContentChanged(t *testing.T) {

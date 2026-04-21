@@ -122,7 +122,7 @@ func TestParseOTPAuthMigrationURI_NameWithoutIssuer(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, entries, 1)
 
-	assert.Equal(t, "", entries[0].Issuer)
+	assert.Empty(t, entries[0].Issuer)
 	assert.Equal(t, "user@example.com", entries[0].Account)
 }
 

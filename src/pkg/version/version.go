@@ -32,16 +32,16 @@ func Parse(version string) []int {
 
 	for i, part := range parts {
 		// 数字以外の文字を除去（例: "1.0.0-beta" -> "1.0.0"）
-		numStr := ""
+		var numStr strings.Builder
 		for _, c := range part {
 			if c >= '0' && c <= '9' {
-				numStr += string(c)
+				numStr.WriteRune(c)
 			} else {
 				break
 			}
 		}
-		if numStr != "" {
-			result[i], _ = strconv.Atoi(numStr)
+		if numStr.Len() > 0 {
+			result[i], _ = strconv.Atoi(numStr.String())
 		}
 	}
 
