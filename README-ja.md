@@ -2,6 +2,7 @@
 
 # Winticator
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/nktmys/winticator)
 [![Go version](https://img.shields.io/github/go-mod/go-version/nktmys/winticator)](https://github.com/nktmys/winticator/blob/main/go.mod)
 [![GitHub release](https://img.shields.io/github/release/nktmys/winticator)](https://github.com/nktmys/winticator/releases/latest)
 [![GitHub all releases](https://img.shields.io/github/downloads/nktmys/winticator/total)](https://github.com/nktmys/winticator/releases) 
