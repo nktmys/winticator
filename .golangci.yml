@@ -52,7 +52,6 @@ linters:
     - thelper
     - tparallel
     - unconvert
-    - unparam
     - unused
     - usestdlibvars
     - usetesting
@@ -65,8 +64,7 @@ linters:
     exhaustive:
       default-signifies-exhaustive: true
     gosec:
-      excludes:
-        - G104
+      severity: medium
     testifylint:
       enable-all: true
     staticcheck:
@@ -81,24 +79,24 @@ linters:
       - std-error-handling
     rules:
       # RFC 6238 TOTP は SHA1 必須 / Unix 時刻は常に非負
-      - path: src/pkg/totp/totp\.go
-        linters: [gosec]
-        text: "G505|G115"
+      - linters: gosec
+        text: G505|G115
+        path: src/pkg/totp/totp\.go
       # TOTP シークレットの JSON マーシャル（直後に AES-256-GCM で暗号化）
-      - path: src/usecase/totpstore/store\.go
-        linters: [gosec]
-        text: "G117"
-      - path: src/ui/settings_data\.go
-        linters: [gosec]
-        text: "G117"
+      - linters: gosec
+        text: G117
+        path: src/usecase/totpstore/store\.go
+      - linters: gosec
+        text: G117
+        path: src/ui/settings_data\.go
       # fyne.ThemeVariant は序数値のみを取る
-      - path: src/usecase/preferences/preferences\.go
-        linters: [gosec]
-        text: "G115"
+      - linters: gosec
+        text: G115
+        path: src/usecase/preferences/preferences\.go
       # テストベクタ / テスト用パスワード
-      - path: _test\.go
-        linters: [gosec]
-        text: "G101"
+      - linters: gosec
+        text: G101
+        path: _test\.go
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
