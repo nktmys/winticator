@@ -1,3 +1,5 @@
+set working-directory := '..'
+
 install: node claude vuln go-tools
 
 node:
@@ -7,8 +9,6 @@ node:
     sudo npm i -g npm
 
 claude:
-    git config --global --add safe.directory /app
-    sudo chown -R $(whoami):$(whoami) ~/.claude
     curl -fsSL https://claude.ai/install.sh | bash
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
