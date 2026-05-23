@@ -1,5 +1,7 @@
+set working-directory := '..'
+
 default:
-    go generate ../src/usecase/totpstore/migration/
+    go generate ./src/usecase/totpstore/migration/
 
 install:
     sudo apt-get update && sudo apt-get install -y --no-install-recommends protobuf-compiler
