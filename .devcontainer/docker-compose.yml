@@ -11,8 +11,10 @@ services:
     environment:
       - CLAUDE_CONFIG_DIR=/home/develop/.claude
     volumes:
+      - develop_gh_volume:/home/develop/.config/gh
       - develop_claude_volume:/home/develop/.claude
       - ../:/app
 
 volumes:
+  develop_gh_volume:
   develop_claude_volume:
