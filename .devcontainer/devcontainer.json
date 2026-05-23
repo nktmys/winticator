@@ -7,7 +7,7 @@
     "ghcr.io/devcontainers/features/desktop-lite:1": {}
   },
   "workspaceFolder": "/app",
-  "postCreateCommand": "just install",
+  "postCreateCommand": "just setup",
   "waitFor": "postCreateCommand",
   "customizations": {
     "vscode": {
