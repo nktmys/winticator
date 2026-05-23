@@ -30,7 +30,7 @@ jobs:
       - run: go mod download
 
       - name: Lint (golangci-lint)
-        uses: golangci/golangci-lint-action@v9
+        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
         with:
           version: latest
           args: --timeout=10m
@@ -41,7 +41,7 @@ jobs:
           govulncheck ./...
 
       - name: Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.35.0
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: fs
           trivy-config: .trivy/trivy.yaml
