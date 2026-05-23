@@ -28,7 +28,7 @@ jobs:
           xcode-version: latest
 
       - name: Install fyne tool
-        run: go install fyne.io/tools/cmd/fyne@latest
+        run: go install fyne.io/tools/cmd/fyne@v1.7.1
 
       - name: Set build number
         run: sed -i '' 's/^Build = .*/Build = ${{ github.run_number }}/' src/FyneApp.toml
