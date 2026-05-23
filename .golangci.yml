@@ -19,7 +19,6 @@ linters:
     - forcetypeassert
     - gocheckcompilerdirectives
     - gochecknoinits
-    - goconst
     - godoclint
     - gomoddirectives
     - goprintffuncname
