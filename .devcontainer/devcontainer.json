@@ -3,8 +3,8 @@
   "dockerComposeFile": ["docker-compose.yml"],
   "service": "winticator",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers/features/desktop-lite:1": {}
+    "ghcr.io/devcontainers/features/github-cli": {},
+    "ghcr.io/devcontainers/features/desktop-lite": {}
   },
   "workspaceFolder": "/app",
   "postCreateCommand": "just setup",
