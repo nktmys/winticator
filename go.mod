@@ -1,6 +1,6 @@
 module github.com/nktmys/winticator
 
-go 1.26
+go 1.26.4
 
 require (
 	fyne.io/fyne/v2 v2.7.4
