@@ -6,4 +6,4 @@ default:
 install:
     sudo apt-get update && sudo apt-get install -y --no-install-recommends protobuf-compiler
     sudo apt-get clean && sudo rm -rf /var/lib/apt/lists/*
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.11
+    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.12
