@@ -9,6 +9,7 @@ services:
     stdin_open: true
     working_dir: /app
     environment:
+      - XDG_SESSION_TYPE=x11
       - CLAUDE_CONFIG_DIR=/home/develop/.claude
     volumes:
       - develop_gh_volume:/home/develop/.config/gh
