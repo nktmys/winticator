@@ -6,7 +6,7 @@ ARG USER_GID=$USER_UID
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends sudo jq \
-    libgl1-mesa-dev xorg-dev libxkbcommon-dev xz-utils \
+    libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev xz-utils \
     apt-transport-https ca-certificates gnupg && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
