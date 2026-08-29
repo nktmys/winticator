@@ -25,7 +25,7 @@ jobs:
       - uses: ./.github/actions/setup-fyne-linux-deps
 
       - name: Install fyne tool
-        run: go install fyne.io/tools/cmd/fyne@v1.7.1
+        run: go install fyne.io/tools/cmd/fyne@v1.7.2
 
       - name: Set build number
         run: sed -i 's/^Build = .*/Build = ${{ github.run_number }}/' src/FyneApp.toml
