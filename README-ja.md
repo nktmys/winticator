@@ -77,7 +77,6 @@ Winticator は**技術的な実装方法や可搬性**に重点を置いてお�
 |------------------|----------------|----------|
 | Windows | x64 (amd64) | `winticator-windows.zip` |
 | macOS | Apple Silicon (arm64) | `winticator-macos.zip` |
-| macOS | Intel (amd64) | `winticator-macos-intel.zip` |
 | Linux | x64 (amd64) | `winticator-linux.tar.xz` |
 
 **他のアーキテクチャのバイナリをご希望の場合は、[issue](https://github.com/nktmys/winticator/issues)でお気軽にご連絡ください。**
