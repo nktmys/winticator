@@ -129,45 +129,45 @@ func (t *totpListTab) copyCode(entry *totpstore.Entry) {
 
 // showEntryMenu はエントリのメニューを表示する
 func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasObject, index int, total int) {
-	var items []*fyne.MenuItem
+	var items []*components.MenuItem
 
 	// 検索中でなければ移動メニューを表示
 	if !t.isSearching() {
 		// 先頭でなければ「上へ移動」を表示
 		if index > 0 {
-			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.moveup"), func() {
+			items = append(items, components.NewMenuItem(lang.L("totp.menu.moveup"), func() {
 				t.moveEntry(entry.ID, -1)
 			}))
 		}
 
 		// 末尾でなければ「下へ移動」を表示
 		if index < total-1 {
-			items = append(items, fyne.NewMenuItem(lang.L("totp.menu.movedown"), func() {
+			items = append(items, components.NewMenuItem(lang.L("totp.menu.movedown"), func() {
 				t.moveEntry(entry.ID, +1)
 			}))
 		}
 
 		// 移動メニューがある場合はセパレータを追加
 		if len(items) > 0 {
-			items = append(items, fyne.NewMenuItemSeparator())
+			items = append(items, components.NewMenuItemSeparator())
 		}
 	}
 
 	items = append(items,
-		fyne.NewMenuItem(lang.L("totp.menu.edit"), func() {
+		components.NewMenuItem(lang.L("totp.menu.edit"), func() {
 			t.showEditDialog(entry)
 		}),
-		fyne.NewMenuItem(lang.L("totp.menu.showqr"), func() {
+		components.NewMenuItem(lang.L("totp.menu.showqr"), func() {
 			t.showQRCode(entry)
 		}),
-		fyne.NewMenuItemSeparator(),
-		fyne.NewMenuItem(lang.L("totp.menu.delete"), func() {
+		components.NewMenuItemSeparator(),
+		// 削除は破壊的操作のため赤字で表示
+		components.NewColoredMenuItem(lang.L("totp.menu.delete"), custom.ColorPrimaryRed, func() {
 			t.confirmDelete(entry)
 		}),
 	)
 
-	menu := fyne.NewMenu("", items...)
-	popup := widget.NewPopUpMenu(menu, t.app.mainWindow.Canvas())
+	popup := components.NewPopUpMenu(t.app.mainWindow.Canvas(), items...)
 	rel := fyne.NewPos(anchor.Size().Width/2-popup.Size().Width, anchor.Size().Height/2)
 	popup.ShowAtRelativePosition(rel, anchor)
 }
