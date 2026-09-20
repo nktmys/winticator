@@ -48,6 +48,8 @@ type PopUpMenu struct {
 	*widget.PopUp
 
 	canvas fyne.Canvas
+	box    *fyne.Container
+	scroll *container.Scroll
 	rows   []*menuRow
 	active int // 選択中の項目インデックス（-1 は未選択）
 }
@@ -69,17 +71,33 @@ func NewPopUpMenu(c fyne.Canvas, items ...*MenuItem) *PopUpMenu {
 		objects = append(objects, row)
 	}
 
-	m.PopUp = widget.NewPopUp(container.NewVBox(objects...), c)
+	// 画面に収まらない場合にスクロールできるようスクロールコンテナへ入れる
+	m.box = container.NewVBox(objects...)
+	m.scroll = container.NewVScroll(m.box)
+	m.scroll.SetMinSize(m.box.MinSize())
+
+	m.PopUp = widget.NewPopUp(m.scroll, c)
 	m.Resize(m.MinSize())
 	return m
 }
 
 // ShowAtPosition は指定位置にメニューを表示する。
-// メニュー全体が画面内に収まるよう、必要に応じて表示位置を調整する。
+// メニュー全体が画面内に収まるよう、必要に応じて表示位置とサイズを調整する。
 func (m *PopUpMenu) ShowAtPosition(pos fyne.Position) {
-	m.Resize(m.MinSize())
+	m.fitToArea()
 	m.PopUp.ShowAtPosition(m.adjustedPosition(pos, m.Size()))
 	m.focusForKeys()
+}
+
+// fitToArea は操作可能領域に収まるようメニューのサイズを決める。
+// 収まらない高さの場合は領域の高さに切り詰め、内容をスクロールで辿れるようにする。
+func (m *PopUpMenu) fitToArea() {
+	_, areaSize := m.canvas.InteractiveArea()
+
+	full := m.box.MinSize()
+	m.scroll.SetMinSize(fyne.NewSize(full.Width, min(full.Height, areaSize.Height)))
+	m.scroll.ScrollToTop()
+	m.Resize(m.MinSize())
 }
 
 // ShowAtRelativePosition は指定オブジェクトからの相対位置にメニューを表示する
@@ -141,6 +159,25 @@ func (m *PopUpMenu) setActive(index int) {
 	}
 	if index >= 0 {
 		m.rows[index].Refresh()
+		m.scrollToActive()
+	}
+}
+
+// scrollToActive は選択中の項目が隠れている場合にスクロールして表示する
+func (m *PopUpMenu) scrollToActive() {
+	row := m.rows[m.active]
+	viewHeight := m.scroll.Size().Height
+	if viewHeight <= 0 || m.box.MinSize().Height <= viewHeight {
+		return
+	}
+
+	top := row.Position().Y
+	bottom := top + row.Size().Height
+	switch {
+	case top < m.scroll.Offset.Y:
+		m.scroll.ScrollToOffset(fyne.NewPos(m.scroll.Offset.X, top))
+	case bottom > m.scroll.Offset.Y+viewHeight:
+		m.scroll.ScrollToOffset(fyne.NewPos(m.scroll.Offset.X, bottom-viewHeight))
 	}
 }
 

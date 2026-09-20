@@ -1,6 +1,7 @@
 package components
 
 import (
+	"fmt"
 	"image/color"
 	"testing"
 
@@ -35,10 +36,12 @@ func TestNewPopUpMenuItemColors(t *testing.T) {
 	var edited, deleted bool
 	menu, _ := newTestPopUpMenu(t, &edited, &deleted)
 
-	box, ok := menu.Content.(*fyne.Container)
+	// 内容はスクロールコンテナ越しに保持される
+	scroll, ok := menu.Content.(*container.Scroll)
 	require.True(t, ok)
-	require.Len(t, box.Objects, 3)
-	assert.IsType(t, &widget.Separator{}, box.Objects[1])
+	require.Same(t, menu.box, scroll.Content)
+	require.Len(t, menu.box.Objects, 3)
+	assert.IsType(t, &widget.Separator{}, menu.box.Objects[1])
 	require.Len(t, menu.rows, 2)
 
 	// 色未指定の項目はテーマの前景色、指定した項目は指定色で表示される
@@ -187,4 +190,54 @@ func TestPopUpMenuLargerThanCanvas(t *testing.T) {
 	areaPos, _ := win.Canvas().InteractiveArea()
 	menu.ShowAtPosition(fyne.NewPos(30, 30))
 	assert.Equal(t, areaPos.AddXY(minMenuOffset, 0), menu.Position())
+}
+
+func TestPopUpMenuScrollsWhenTallerThanCanvas(t *testing.T) {
+	test.NewTempApp(t)
+	win := test.NewTempWindow(t, widget.NewLabel("dummy"))
+	win.Resize(fyne.NewSize(240, 120))
+
+	items := make([]*MenuItem, 0, 10)
+	for i := range 10 {
+		items = append(items, NewMenuItem(fmt.Sprintf("item %d", i), nil))
+	}
+	menu := NewPopUpMenu(win.Canvas(), items...)
+	menu.ShowAtPosition(fyne.NewPos(0, 0))
+
+	areaPos, areaSize := win.Canvas().InteractiveArea()
+	require.Greater(t, menu.box.MinSize().Height, areaSize.Height)
+
+	// 画面に収まらない高さは切り詰められ、スクロールで残りを辿れる
+	assert.InDelta(t, areaSize.Height, menu.Size().Height, 0.001)
+	assert.LessOrEqual(t, menu.Position().Y+menu.Size().Height, areaPos.Y+areaSize.Height)
+	assert.InDelta(t, 0, menu.scroll.Offset.Y, 0.001)
+
+	// キーボードで末尾まで移動すると、選択項目が見える位置までスクロールする
+	menu.rows[0].TypedKey(&fyne.KeyEvent{Name: fyne.KeyUp})
+	last := menu.rows[len(menu.rows)-1]
+	require.True(t, last.isActive())
+	assert.Positive(t, menu.scroll.Offset.Y)
+	assert.LessOrEqual(t, last.Position().Y+last.Size().Height, menu.scroll.Offset.Y+menu.scroll.Size().Height)
+
+	// 先頭へ戻すと最上部までスクロールが戻る
+	menu.rows[0].TypedKey(&fyne.KeyEvent{Name: fyne.KeyDown})
+	require.True(t, menu.rows[0].isActive())
+	assert.InDelta(t, 0, menu.scroll.Offset.Y, 0.001)
+}
+
+func TestPopUpMenuMouseWheelScrolls(t *testing.T) {
+	test.NewTempApp(t)
+	win := test.NewTempWindow(t, widget.NewLabel("dummy"))
+	win.Resize(fyne.NewSize(240, 120))
+
+	items := make([]*MenuItem, 0, 10)
+	for i := range 10 {
+		items = append(items, NewMenuItem(fmt.Sprintf("item %d", i), nil))
+	}
+	menu := NewPopUpMenu(win.Canvas(), items...)
+	menu.ShowAtPosition(fyne.NewPos(10, 0))
+
+	// メニュー上でのホイール操作がスクロールコンテナに届く
+	test.Scroll(win.Canvas(), fyne.NewPos(20, 20), 0, -40)
+	assert.Positive(t, menu.scroll.Offset.Y)
 }
