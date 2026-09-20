@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/test"
 	"fyne.io/fyne/v2/theme"
@@ -117,4 +118,73 @@ func TestPopUpMenuEscapeClosesWithoutAction(t *testing.T) {
 	assert.False(t, menu.Visible())
 	assert.False(t, edited)
 	assert.False(t, deleted)
+}
+
+func TestPopUpMenuKeepsInsideCanvas(t *testing.T) {
+	var edited, deleted bool
+	menu, win := newTestPopUpMenu(t, &edited, &deleted)
+	win.Resize(fyne.NewSize(240, 200))
+
+	areaPos, areaSize := win.Canvas().InteractiveArea()
+	t.Logf("interactive area pos=%v size=%v menu=%v", areaPos, areaSize, menu.Size())
+
+	// 画面右下をはみ出す位置を指定しても、全体が収まる位置に補正される
+	menu.ShowAtPosition(fyne.NewPos(areaSize.Width-5, areaSize.Height-5))
+	pos := menu.Position()
+	assert.LessOrEqual(t, pos.X+menu.Size().Width, areaPos.X+areaSize.Width)
+	assert.LessOrEqual(t, pos.Y+menu.Size().Height, areaPos.Y+areaSize.Height)
+	assert.GreaterOrEqual(t, pos.X, areaPos.X)
+	assert.GreaterOrEqual(t, pos.Y, areaPos.Y)
+	menu.Hide()
+
+	// 収まる位置なら補正しない
+	menu.ShowAtPosition(fyne.NewPos(10, 10))
+	assert.Equal(t, fyne.NewPos(10, 10), menu.Position())
+}
+
+func TestPopUpMenuRelativePositionKeepsInsideCanvas(t *testing.T) {
+	test.NewTempApp(t)
+
+	// 画面下部にメニューボタンがある状態（一覧の最下段エントリ相当）を再現する
+	anchor := widget.NewButton("menu", nil)
+	win := test.NewTempWindow(t, container.NewVBox(
+		widget.NewLabel("entry1"),
+		widget.NewLabel("entry2"),
+		widget.NewLabel("entry3"),
+		anchor,
+	))
+	win.Resize(fyne.NewSize(240, 200))
+
+	menu := NewPopUpMenu(win.Canvas(),
+		NewMenuItem("move up", nil),
+		NewMenuItem("move down", nil),
+		NewMenuItemSeparator(),
+		NewMenuItem("edit", nil),
+		NewMenuItem("show qr", nil),
+		NewMenuItemSeparator(),
+		NewColoredMenuItem("delete", testRed, nil),
+	)
+
+	// totplist_item.go と同じ相対位置でメニューを開く
+	rel := fyne.NewPos(anchor.Size().Width/2-menu.Size().Width, anchor.Size().Height/2)
+	menu.ShowAtRelativePosition(rel, anchor)
+
+	areaPos, areaSize := win.Canvas().InteractiveArea()
+	pos := menu.Position()
+	assert.LessOrEqual(t, pos.Y+menu.Size().Height, areaPos.Y+areaSize.Height)
+	assert.LessOrEqual(t, pos.X+menu.Size().Width, areaPos.X+areaSize.Width)
+	assert.GreaterOrEqual(t, pos.X, areaPos.X)
+	assert.GreaterOrEqual(t, pos.Y, areaPos.Y)
+}
+
+func TestPopUpMenuLargerThanCanvas(t *testing.T) {
+	var edited, deleted bool
+	menu, win := newTestPopUpMenu(t, &edited, &deleted)
+
+	// メニューより小さい画面では左上に寄せる（はみ出す分は下側に出す）。
+	// オーバーレイによる中央寄せを避けるため、原点とは一致させない
+	win.Resize(fyne.NewSize(40, 40))
+	areaPos, _ := win.Canvas().InteractiveArea()
+	menu.ShowAtPosition(fyne.NewPos(30, 30))
+	assert.Equal(t, areaPos.AddXY(minMenuOffset, 0), menu.Position())
 }

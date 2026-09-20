@@ -36,6 +36,11 @@ func NewMenuItemSeparator() *MenuItem {
 	return &MenuItem{IsSeparator: true}
 }
 
+// minMenuOffset は表示位置が原点と一致した場合に横方向へずらす量。
+// オーバーレイは位置が (0,0) のコンテンツを位置未指定とみなして中央寄せするため、
+// widget.PopUpMenu と同様に位置が原点と一致しないようにする必要がある。
+const minMenuOffset = 1
+
 // PopUpMenu は項目ごとに文字色を指定できるポップアップメニュー。
 // マウス操作に加え、上下キーでの項目移動、Enter/Space での実行、
 // Escape でのクローズに対応する。
@@ -69,16 +74,41 @@ func NewPopUpMenu(c fyne.Canvas, items ...*MenuItem) *PopUpMenu {
 	return m
 }
 
-// ShowAtPosition は指定位置にメニューを表示する
+// ShowAtPosition は指定位置にメニューを表示する。
+// メニュー全体が画面内に収まるよう、必要に応じて表示位置を調整する。
 func (m *PopUpMenu) ShowAtPosition(pos fyne.Position) {
-	m.PopUp.ShowAtPosition(pos)
+	m.Resize(m.MinSize())
+	m.PopUp.ShowAtPosition(m.adjustedPosition(pos, m.Size()))
 	m.focusForKeys()
 }
 
 // ShowAtRelativePosition は指定オブジェクトからの相対位置にメニューを表示する
 func (m *PopUpMenu) ShowAtRelativePosition(rel fyne.Position, to fyne.CanvasObject) {
-	m.PopUp.ShowAtRelativePosition(rel, to)
-	m.focusForKeys()
+	driver := fyne.CurrentApp().Driver()
+	if driver.CanvasForObject(to) == nil {
+		fyne.LogError("Could not locate parent object to display relative to", nil)
+		m.ShowAtPosition(rel)
+		return
+	}
+
+	m.ShowAtPosition(driver.AbsolutePositionForObject(to).Add(rel))
+}
+
+// adjustedPosition はメニュー全体が操作可能領域に収まるよう表示位置を補正する。
+// widget.PopUpMenu と同様の調整に加え、左端・上端からのはみ出しも抑える。
+func (m *PopUpMenu) adjustedPosition(pos fyne.Position, size fyne.Size) fyne.Position {
+	areaPos, areaSize := m.canvas.InteractiveArea()
+
+	// 右端・下端からはみ出す場合は内側に寄せ、それでも収まらない場合は左上に合わせる
+	x := max(min(pos.X, areaPos.X+areaSize.Width-size.Width), areaPos.X)
+	y := max(min(pos.Y, areaPos.Y+areaSize.Height-size.Height), areaPos.Y)
+
+	adjusted := fyne.NewPos(x, y)
+	if adjusted.IsZero() {
+		adjusted.X = minMenuOffset
+	}
+
+	return adjusted
 }
 
 // Show はメニューを表示する
