@@ -12,14 +12,14 @@ claude:
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
 vuln:
-    go install golang.org/x/vuln/cmd/govulncheck@v1.7.0
+    go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
     curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.74.0
 
 go-tools:
     go install github.com/abice/go-enum@v0.9.4
     go install github.com/cweill/gotests/gotests@v1.9.0
     go install github.com/fatih/gomodifytags@v1.17.0
-    go install github.com/go-delve/delve/cmd/dlv@v1.27.1
+    go install github.com/go-delve/delve/cmd/dlv@v1.27.2
     go install github.com/josharian/impl@v1.5.0
     go install golang.org/x/tools/gopls@v0.23.0
     go install fyne.io/tools/cmd/fyne@v1.7.2
