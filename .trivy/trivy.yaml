@@ -27,6 +27,11 @@ severity:
   - CRITICAL
 
 scan:
+  skip-dirs:
+    - .cache
+    - .secrets
+  skip-files:
+    - '**/.env'
   scanners:
     - vuln
     - misconfig

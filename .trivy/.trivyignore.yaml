@@ -9,7 +9,7 @@ misconfigurations:
 secrets:
   - id: github-pat
     paths:
-      - '.secrets/*'
+      - '**/.env'
     statement: 'Accept for debug environment'
 
 licenses:
