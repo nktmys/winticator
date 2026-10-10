@@ -4,7 +4,7 @@ go 1.27.1
 
 require (
 	fyne.io/fyne/v2 v2.8.1
-	github.com/go-vgo/robotgo v1.0.2
+	github.com/go-vgo/robotgo v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
@@ -13,7 +13,7 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
 	github.com/stretchr/testify v1.12.1
 	golang.org/x/crypto v0.57.0
-	golang.org/x/sync v0.23.0
+	golang.org/x/sync v0.24.0
 	google.golang.org/protobuf v1.36.12
 )
 
@@ -56,6 +56,7 @@ require (
 	github.com/tailscale/win v0.0.0-20260619195133-2d76c33a64c1 // indirect
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
 	github.com/tklauser/numcpus v0.12.0 // indirect
+	github.com/vcaesar/go-wayland v0.40.0 // indirect
 	github.com/vcaesar/gops v0.42.0 // indirect
 	github.com/vcaesar/imgo v0.42.0 // indirect
 	github.com/vcaesar/keycode v0.20.0 // indirect
