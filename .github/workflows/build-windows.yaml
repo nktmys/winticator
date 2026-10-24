@@ -21,21 +21,20 @@ jobs:
     steps:
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2.33.0
         with:
+          msystem: MINGW64
+          suppress-deprecation-warnings: msystem-mingw64
           path-type: inherit
           update: true
           install: >-
             zip
+            git
+            mingw-w64-x86_64-toolchain
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-
-      - name: Install Fyne Dependencies
-        run: >
-          pacman -Syu &&
-          pacman --noconfirm -S git mingw-w64-x86_64-toolchain mingw-w64-x86_64-go
 
       - name: Install fyne tool
         run: go install fyne.io/tools/cmd/fyne@v1.7.4
