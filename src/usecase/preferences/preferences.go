@@ -7,9 +7,11 @@ import (
 
 // 設定キー（非公開）
 const (
-	keyThemeVariant = "themeVariant"
-	keyLanguage     = "language"
-	keyTOTPData     = "totpData"
+	keyThemeVariant  = "themeVariant"
+	keyLanguage      = "language"
+	keyTOTPData      = "totpData"
+	keyTOTPGroups    = "totpGroupsData"
+	keySelectedGroup = "totpSelectedGroup"
 )
 
 // デフォルト値（非公開）
@@ -58,4 +60,25 @@ func (m *Manager) GetTOTPData() string {
 // SetTOTPData はTOTPデータを保存する
 func (m *Manager) SetTOTPData(data string) {
 	m.preferences.SetString(keyTOTPData, data)
+}
+
+// GetTOTPGroupsData はTOTPグループデータを取得する
+func (m *Manager) GetTOTPGroupsData() string {
+	return m.preferences.StringWithFallback(keyTOTPGroups, "")
+}
+
+// SetTOTPGroupsData はTOTPグループデータを保存する
+func (m *Manager) SetTOTPGroupsData(data string) {
+	m.preferences.SetString(keyTOTPGroups, data)
+}
+
+// GetSelectedGroup は選択中のグループIDを取得する
+// 空文字列は「すべて」を表す
+func (m *Manager) GetSelectedGroup() string {
+	return m.preferences.StringWithFallback(keySelectedGroup, "")
+}
+
+// SetSelectedGroup は選択中のグループIDを保存する
+func (m *Manager) SetSelectedGroup(id string) {
+	m.preferences.SetString(keySelectedGroup, id)
 }

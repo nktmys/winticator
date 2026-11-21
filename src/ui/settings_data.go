@@ -2,7 +2,7 @@ package ui
 
 import (
 	"encoding/base64"
-	"encoding/json"
+	"errors"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -51,8 +51,8 @@ func (t *settingsTab) doExport(password string) {
 		return
 	}
 
-	// JSONにシリアライズ
-	data, err := json.Marshal(entries)
+	// グループを含むバックアップ形式でシリアライズ
+	data, err := t.app.totpStore.MarshalBackup()
 	if err != nil {
 		dialog.ShowError(err, t.app.mainWindow)
 		return
@@ -165,9 +165,12 @@ func (t *settingsTab) doImport(data []byte, password string) {
 		return
 	}
 
-	// JSONをデシリアライズ
-	var entries []*totpstore.Entry
-	if err := json.Unmarshal(decrypted, &entries); err != nil {
+	// バックアップをパース（旧形式も受け付ける）
+	backup, err := totpstore.ParseBackup(decrypted)
+	if err != nil {
+		if errors.Is(err, totpstore.ErrUnsupportedBackupVersion) {
+			err = errors.New(lang.L("settings.import.unsupported"))
+		}
 		dialog.ShowError(err, t.app.mainWindow)
 		return
 	}
@@ -178,28 +181,21 @@ func (t *settingsTab) doImport(data []byte, password string) {
 			lang.L("settings.import.title"),
 			lang.L("settings.import.merge"),
 			func(merge bool) {
-				if !merge {
-					// 既存データを削除
-					for _, e := range t.app.totpStore.GetAll() {
-						_ = t.app.totpStore.Delete(e.ID)
-					}
-				}
-				t.importEntries(entries)
+				t.importBackup(backup, !merge)
 			},
 			t.app.mainWindow,
 		)
 	} else {
-		t.importEntries(entries)
+		t.importBackup(backup, false)
 	}
 }
 
-// importEntries はエントリをインポートする
-func (t *settingsTab) importEntries(entries []*totpstore.Entry) {
-	for _, entry := range entries {
-		if err := t.app.totpStore.Add(entry); err != nil {
-			dialog.ShowError(err, t.app.mainWindow)
-			return
-		}
+// importBackup はバックアップをインポートする
+// replace が true の場合は既存のエントリとグループを置き換える
+func (t *settingsTab) importBackup(b *totpstore.Backup, replace bool) {
+	if err := t.app.totpStore.ImportBackup(b, replace); err != nil {
+		dialog.ShowError(err, t.app.mainWindow)
+		return
 	}
 
 	if err := t.app.totpStore.Save(); err != nil {

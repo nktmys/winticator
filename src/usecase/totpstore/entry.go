@@ -14,15 +14,16 @@ const algorithmSHA1 = "SHA1"
 
 // Entry はTOTPエントリを表す構造体
 type Entry struct {
-	ID        string    `json:"id"`         // UUID
-	Issuer    string    `json:"issuer"`     // サービス名 (例: "Google")
-	Account   string    `json:"account"`    // アカウント名 (例: "user@gmail.com")
-	Secret    string    `json:"secret"`     // Base32シークレットキー
-	Algorithm string    `json:"algorithm"`  // "SHA1", "SHA256", "SHA512"
-	Digits    int       `json:"digits"`     // 6 または 8
-	Period    int       `json:"period"`     // 秒単位 (通常30)
-	Order     int       `json:"order"`      // 表示順序
-	CreatedAt time.Time `json:"created_at"` // 登録日時
+	ID        string    `json:"id"`                 // UUID
+	Issuer    string    `json:"issuer"`             // サービス名 (例: "Google")
+	Account   string    `json:"account"`            // アカウント名 (例: "user@gmail.com")
+	Secret    string    `json:"secret"`             // Base32シークレットキー
+	Algorithm string    `json:"algorithm"`          // "SHA1", "SHA256", "SHA512"
+	Digits    int       `json:"digits"`             // 6 または 8
+	Period    int       `json:"period"`             // 秒単位 (通常30)
+	Order     int       `json:"order"`              // 表示順序
+	CreatedAt time.Time `json:"created_at"`         // 登録日時
+	GroupID   string    `json:"group_id,omitempty"` // 所属グループID（空は未分類）
 }
 
 // NewEntry は新しいTOTPエントリを作成する
