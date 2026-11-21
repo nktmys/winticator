@@ -12,8 +12,8 @@ claude:
     curl -LsSf https://astral.sh/uv/install.sh | sh
 
 vuln:
-    go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
-    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.76.1
+    go install golang.org/x/vuln/cmd/govulncheck@v1.10.0
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.76.2
 
 go-tools:
     go install github.com/abice/go-enum@v0.9.5

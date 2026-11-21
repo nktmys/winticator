@@ -10,13 +10,13 @@
 English | [日本語](./README-ja.md)
 
 `Winticator` is an independent, open-source TOTP authenticator for desktop environments
-(Windows / macOS / Linux), implemented as a cross-platform reference application.
+(Windows / macOS / Linux).
 
-This project is intended as a **technical demonstration** of how to build and distribute
-a standalone, cross-platform desktop application based on open standards.
+It is a standalone, cross-platform desktop application based on open standards,
+built for everyday use to generate one-time passwords on your computer.
 
 <p align="center">
-  <img src="./images/ss-top-register.gif" alt="Winticator demo" width="400">
+  <img src="./images/ss-top-register.gif" alt="Registering a TOTP entry in Winticator" width="400">
 </p>
 
 ---
@@ -29,8 +29,7 @@ a standalone, cross-platform desktop application based on open standards.
 - Designed as a simple, minimal implementation
 - Released as **MIT licensed open-source software**
 
-Winticator focuses on **technical implementation and portability**,
-not on product differentiation or commercial use.
+Winticator is not intended for differentiation from other products or for commercialization.
 
 ---
 
@@ -87,8 +86,8 @@ Download binaries for your platform from the [Releases](https://github.com/nktmy
 
 The primary purpose of this project is:
 
-- To demonstrate a practical approach for building **cross-platform desktop applications**
-- To provide a **reference implementation** of a TOTP authenticator on desktop environments
+- To provide a simple, offline **TOTP authenticator for desktop environments**
+- To offer a **cross-platform** experience across Windows, macOS, and Linux
 - To share implementation knowledge using **publicly available standards and information**
 
 This project is **not intended to be a commercial product**,
