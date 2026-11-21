@@ -118,10 +118,8 @@ func (s *Store) ImportBackup(b *Backup, replace bool) error {
 		if err != nil {
 			return err
 		}
-		id := g.ID
-		if groupExists(s.groups, id) {
-			id = xid.New().String()
-		}
+		// IDは常に新しく採番し、既存データとの重複を防ぐ
+		id := xid.New().String()
 		s.groups = append(s.groups, &Group{ID: id, Name: g.Name, Order: s.nextGroupOrder()})
 		idMap[g.ID] = id
 	}
@@ -137,6 +135,7 @@ func (s *Store) ImportBackup(b *Backup, replace bool) error {
 			continue
 		}
 		ne := *e
+		ne.ID = xid.New().String()    // 既存エントリとのID重複を防ぐため常に新しく採番する
 		ne.GroupID = idMap[e.GroupID] // 対応がなければ空（未分類）
 		maxOrder++
 		ne.Order = maxOrder

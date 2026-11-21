@@ -390,3 +390,70 @@ func TestStore_GroupLoadFailureDoesNotOverwriteGroups(t *testing.T) {
 	require.NoError(t, store2.Save())
 	assert.Equal(t, "corrupted", mock.String("totpGroupsData"))
 }
+
+func TestStore_Add_AssignsUniqueID(t *testing.T) {
+	store := New(preferences.New(newMockPreferences()))
+
+	first := &Entry{ID: "dup", Issuer: "A", Secret: "JBSWY3DPEHPK3PXP"}
+	require.NoError(t, store.Add(first))
+	assert.Equal(t, "dup", first.ID)
+
+	// 既存と重複するIDは新しく採番される
+	second := &Entry{ID: "dup", Issuer: "B", Secret: "JBSWY3DPEHPK3PXP"}
+	require.NoError(t, store.Add(second))
+	assert.NotEqual(t, "dup", second.ID)
+	assert.NotEmpty(t, second.ID)
+
+	// 空のIDも採番される
+	third := &Entry{Issuer: "C", Secret: "JBSWY3DPEHPK3PXP"}
+	require.NoError(t, store.Add(third))
+	assert.NotEmpty(t, third.ID)
+	assert.NotEqual(t, second.ID, third.ID)
+}
+
+func TestStore_Load_RepairsDuplicateIDs(t *testing.T) {
+	machinekey.ResetCache()
+
+	mock := newMockPreferences()
+	prefs := preferences.New(mock)
+
+	// 過去のインポートで重複IDが保存されてしまったデータを用意する
+	entriesData, err := encryptJSON([]*Entry{
+		{ID: "e1", Issuer: "A", Secret: "JBSWY3DPEHPK3PXP", Order: 0},
+		{ID: "e1", Issuer: "B", Secret: "JBSWY3DPEHPK3PXP", Order: 1, GroupID: "g1"},
+		{ID: "", Issuer: "C", Secret: "JBSWY3DPEHPK3PXP", Order: 2},
+	})
+	require.NoError(t, err)
+	prefs.SetTOTPData(entriesData)
+	groupsData, err := encryptJSON([]*Group{
+		{ID: "g1", Name: "仕事", Order: 0},
+		{ID: "g1", Name: "個人", Order: 1},
+		{ID: SelectionUngrouped, Name: "予約", Order: 2},
+	})
+	require.NoError(t, err)
+	prefs.SetTOTPGroupsData(groupsData)
+
+	store := New(prefs)
+	require.NoError(t, store.Load())
+
+	entries := store.GetAll()
+	require.Len(t, entries, 3)
+	assert.Equal(t, "e1", entries[0].ID)
+	assert.NotEqual(t, "e1", entries[1].ID)
+	assert.NotEmpty(t, entries[2].ID)
+	assert.NotEqual(t, entries[1].ID, entries[2].ID)
+	assert.Equal(t, "g1", entries[1].GroupID)
+
+	groups := store.GetGroups()
+	require.Len(t, groups, 3)
+	assert.Equal(t, "g1", groups[0].ID)
+	assert.NotEqual(t, "g1", groups[1].ID)
+	assert.NotEmpty(t, groups[1].ID)
+	assert.NotEqual(t, SelectionUngrouped, groups[2].ID)
+
+	// 修復後のIDで削除すると、その1件だけが消える
+	require.NoError(t, store.Delete(entries[1].ID))
+	assert.Equal(t, 2, store.Count())
+	_, err = store.Get("e1")
+	require.NoError(t, err)
+}

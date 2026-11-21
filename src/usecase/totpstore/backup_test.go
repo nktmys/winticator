@@ -77,20 +77,51 @@ func TestStore_ImportBackup_Replace(t *testing.T) {
 	}
 	require.NoError(t, s.ImportBackup(b, true))
 
+	// IDはバックアップの値を使わず新しく採番される
 	groups := s.GetGroups()
 	require.Len(t, groups, 2)
-	assert.Equal(t, "B1", groups[0].ID)
+	assert.NotEqual(t, "B1", groups[0].ID)
 	assert.Equal(t, "仕事", groups[0].Name)
 	assert.Equal(t, 0, groups[0].Order)
-	assert.Equal(t, "B2", groups[1].ID)
+	assert.NotEqual(t, "B2", groups[1].ID)
+	assert.Equal(t, "個人", groups[1].Name)
 	assert.Equal(t, 1, groups[1].Order)
 
 	entries := s.GetAll()
 	require.Len(t, entries, 2)
-	assert.Equal(t, "e1", entries[0].ID)
-	assert.Equal(t, "B2", entries[0].GroupID)
-	assert.Equal(t, "e2", entries[1].ID)
+	assert.NotEqual(t, "e1", entries[0].ID)
+	assert.Equal(t, "A", entries[0].Issuer)
+	assert.Equal(t, groups[1].ID, entries[0].GroupID)
+	assert.NotEqual(t, "e2", entries[1].ID)
 	assert.Empty(t, entries[1].GroupID)
+}
+
+func TestStore_ImportBackup_MergeSameBackupTwice_UniqueIDs(t *testing.T) {
+	s := newBackupTestStore()
+	work, err := s.AddGroup("仕事")
+	require.NoError(t, err)
+	require.NoError(t, s.Add(NewEntry("GitHub", "me", "JBSWY3DPEHPK3PXP")))
+
+	// 同じバックアップを統合すると同名エントリが2件になるが、IDは別になる
+	data, err := s.MarshalBackup()
+	require.NoError(t, err)
+	b, err := ParseBackup(data)
+	require.NoError(t, err)
+	require.NoError(t, s.ImportBackup(b, false))
+
+	entries := s.GetAll()
+	require.Len(t, entries, 2)
+	require.NotEqual(t, entries[0].ID, entries[1].ID)
+
+	// 2件目を別グループへ移動して削除すると、2件目だけが消える
+	second := entries[1].ID
+	require.NoError(t, s.MoveEntryToGroup(second, work.ID))
+	require.NoError(t, s.Delete(second))
+
+	remaining := s.GetAll()
+	require.Len(t, remaining, 1)
+	assert.Equal(t, entries[0].ID, remaining[0].ID)
+	assert.Empty(t, remaining[0].GroupID)
 }
 
 func TestStore_ImportBackup_MergeByName(t *testing.T) {
@@ -144,10 +175,11 @@ func TestStore_ImportBackup_NullGroupAndEntry(t *testing.T) {
 		b, err := ParseBackup([]byte(`{"version":2,"groups":[null,{"id":"B1","name":"仕事","order":0}],"entries":[null,{"id":"e1","secret":"JBSWY3DPEHPK3PXP","group_id":"B1"}]}`))
 		require.NoError(t, err)
 		require.NoError(t, s.ImportBackup(b, replace))
-		require.Len(t, s.GetGroups(), 1)
+		groups := s.GetGroups()
+		require.Len(t, groups, 1)
 		entries := s.GetAll()
 		require.Len(t, entries, 1)
-		assert.Equal(t, "B1", entries[0].GroupID)
+		assert.Equal(t, groups[0].ID, entries[0].GroupID)
 	}
 }
 
@@ -196,8 +228,9 @@ func TestStore_ImportBackup_ReplaceDuplicateNames(t *testing.T) {
 		Entries: []*Entry{{ID: "e1", Secret: "JBSWY3DPEHPK3PXP", GroupID: "B2"}},
 	}
 	require.NoError(t, s.ImportBackup(b, true))
-	require.Len(t, s.GetGroups(), 1)
-	assert.Equal(t, "B1", s.GetAll()[0].GroupID)
+	groups := s.GetGroups()
+	require.Len(t, groups, 1)
+	assert.Equal(t, groups[0].ID, s.GetAll()[0].GroupID)
 }
 
 func TestStore_ImportBackup_MergeNameMatching(t *testing.T) {

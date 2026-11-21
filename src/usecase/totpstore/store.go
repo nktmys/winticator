@@ -7,6 +7,8 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/rs/xid"
+
 	"github.com/nktmys/winticator/src/pkg/machinekey"
 	"github.com/nktmys/winticator/src/usecase/crypto"
 	"github.com/nktmys/winticator/src/usecase/preferences"
@@ -99,6 +101,7 @@ func (s *Store) Load() error {
 		s.entries = entries
 	}
 	s.loaded = true
+	s.ensureUniqueIDs()
 
 	// グループを読み込む（キーが空ならグループなし）
 	if encrypted := s.prefs.GetTOTPGroupsData(); encrypted != "" {
@@ -109,6 +112,7 @@ func (s *Store) Load() error {
 		}
 		s.groups = groups
 	}
+	s.ensureUniqueIDs()
 	return nil
 }
 
@@ -180,8 +184,37 @@ func (s *Store) Add(entry *Entry) error {
 	}
 	entry.Order = maxOrder + 1
 
+	// IDが空または既存と重複する場合は新しく採番する
+	if entry.ID == "" || slices.ContainsFunc(s.entries, func(e *Entry) bool { return e.ID == entry.ID }) {
+		entry.ID = xid.New().String()
+	}
+
 	s.entries = append(s.entries, entry)
 	return nil
+}
+
+// ensureUniqueIDs は空または重複したエントリ・グループのIDを新しく採番する
+// 過去のインポートで重複IDが保存されたデータを修復するために使う
+// 呼び出し側でロックを取得していること
+func (s *Store) ensureUniqueIDs() {
+	s.entries = slices.DeleteFunc(s.entries, func(e *Entry) bool { return e == nil })
+	seen := make(map[string]bool, len(s.entries))
+	for _, e := range s.entries {
+		if e.ID == "" || seen[e.ID] {
+			e.ID = xid.New().String()
+		}
+		seen[e.ID] = true
+	}
+
+	s.groups = slices.DeleteFunc(s.groups, func(g *Group) bool { return g == nil })
+	seenGroups := make(map[string]bool, len(s.groups))
+	for _, g := range s.groups {
+		// 「未分類」の選択値と同じIDは選択と衝突するため振り直す
+		if g.ID == "" || g.ID == SelectionUngrouped || seenGroups[g.ID] {
+			g.ID = xid.New().String()
+		}
+		seenGroups[g.ID] = true
+	}
 }
 
 // Update は既存のエントリを更新する
