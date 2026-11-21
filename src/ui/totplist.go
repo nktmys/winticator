@@ -173,7 +173,11 @@ func (t *totpListTab) filterEntries(query string) {
 // refreshEntries はエントリリストを更新する
 func (t *totpListTab) refreshEntries() {
 	t.entries = t.store.GetAll()
-	t.selectedGroup = totpstore.ResolveSelection(t.store.GetGroups(), t.selectedGroup)
+	// 選択中のグループが削除・置き換えで消えた場合は「すべて」に戻し、その選択を保存する
+	if resolved := totpstore.ResolveSelection(t.store.GetGroups(), t.selectedGroup); resolved != t.selectedGroup {
+		t.selectedGroup = resolved
+		t.app.preferences.SetSelectedGroup(resolved)
+	}
 	t.updateGroupButton()
 	t.filterEntries(t.searchEntry.Text)
 }
