@@ -31,4 +31,13 @@ var (
 
 	// ErrNoTOTPEntries はmigrationデータにTOTPエントリがない場合のエラー
 	ErrNoTOTPEntries = errors.New("no TOTP entries found in migration data")
+
+	// ErrGroupNotFound はグループが見つからない場合のエラー
+	ErrGroupNotFound = errors.New("group not found")
+
+	// ErrGroupNameEmpty はグループ名が空の場合のエラー
+	ErrGroupNameEmpty = errors.New("group name is empty")
+
+	// ErrGroupNameDuplicate はグループ名が重複している場合のエラー
+	ErrGroupNameDuplicate = errors.New("group name already exists")
 )

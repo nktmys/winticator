@@ -153,6 +153,13 @@ func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasOb
 		}
 	}
 
+	// 移動先がある場合のみ「グループへ移動…」を表示
+	if len(t.moveGroupMenuItems(entry)) > 0 {
+		items = append(items, components.NewMenuItem(lang.L("totp.menu.movegroup"), func() {
+			t.showMoveGroupMenu(entry, anchor)
+		}))
+	}
+
 	items = append(items,
 		components.NewMenuItem(lang.L("totp.menu.edit"), func() {
 			t.showEditDialog(entry)
@@ -172,28 +179,31 @@ func (t *totpListTab) showEntryMenu(entry *totpstore.Entry, anchor fyne.CanvasOb
 	popup.ShowAtRelativePosition(rel, anchor)
 }
 
-// moveEntry はエントリを指定方向に移動する（direction: -1=上, +1=下）
+// moveEntry はエントリを表示中の隣のエントリと入れ替える（direction: -1=上, +1=下）
 func (t *totpListTab) moveEntry(id string, direction int) {
-	// 現在のエントリからIDリストを生成
-	ids := make([]string, len(t.entries))
-	targetIdx := -1
-	for i, e := range t.entries {
-		ids[i] = e.ID
+	// 表示中のリスト上で隣のエントリを決める
+	pos := -1
+	for i, e := range t.filteredEntries {
 		if e.ID == id {
-			targetIdx = i
+			pos = i
+			break
 		}
 	}
-
-	if targetIdx < 0 {
+	if pos < 0 {
 		return
 	}
-
-	// 隣接エントリと入れ替え
-	swapIdx := targetIdx + direction
-	if swapIdx < 0 || swapIdx >= len(ids) {
+	neighborPos := pos + direction
+	if neighborPos < 0 || neighborPos >= len(t.filteredEntries) {
 		return
 	}
-	ids[targetIdx], ids[swapIdx] = ids[swapIdx], ids[targetIdx]
+	neighborID := t.filteredEntries[neighborPos].ID
+
+	// 全エントリのIDリスト上で2件の位置を入れ替える
+	ids, idx, neighborIdx := t.entryIDsWithPositions(id, neighborID)
+	if idx < 0 || neighborIdx < 0 {
+		return
+	}
+	ids[idx], ids[neighborIdx] = ids[neighborIdx], ids[idx]
 
 	// 永続化してリスト更新
 	if err := t.store.Reorder(ids); err != nil {
@@ -203,6 +213,22 @@ func (t *totpListTab) moveEntry(id string, direction int) {
 		return
 	}
 	t.refreshEntries()
+}
+
+// entryIDsWithPositions は全エントリのIDリストと、指定2件のそのリスト上の位置を返す（見つからなければ -1）
+func (t *totpListTab) entryIDsWithPositions(a, b string) ([]string, int, int) {
+	ids := make([]string, len(t.entries))
+	aIdx, bIdx := -1, -1
+	for i, e := range t.entries {
+		ids[i] = e.ID
+		switch e.ID {
+		case a:
+			aIdx = i
+		case b:
+			bIdx = i
+		}
+	}
+	return ids, aIdx, bIdx
 }
 
 // showEditDialog は編集ダイアログを表示する

@@ -367,3 +367,26 @@ func TestStore_EmptyLoad(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, 0, store.Count())
 }
+
+func TestStore_GroupLoadFailureDoesNotOverwriteGroups(t *testing.T) {
+	machinekey.ResetCache()
+
+	mock := newMockPreferences()
+	store := New(preferences.New(mock))
+	require.NoError(t, store.Load())
+	_, err := store.AddGroup("仕事")
+	require.NoError(t, err)
+	require.NoError(t, store.Add(&Entry{ID: "e1", Issuer: "GitHub", Secret: "ABCDEFGH", Digits: 6, Period: 30}))
+	require.NoError(t, store.Save())
+
+	// グループデータを壊す
+	mock.SetString("totpGroupsData", "corrupted")
+
+	store2 := New(preferences.New(mock))
+	require.Error(t, store2.Load())
+	assert.Equal(t, 1, store2.Count(), "エントリは保持される")
+
+	// 保存してもグループデータは上書きされない
+	require.NoError(t, store2.Save())
+	assert.Equal(t, "corrupted", mock.String("totpGroupsData"))
+}

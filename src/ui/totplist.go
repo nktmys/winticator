@@ -12,6 +12,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/lang"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/nktmys/winticator/src/ui/custom/components"
 	"github.com/nktmys/winticator/src/usecase/clipboard"
@@ -31,7 +32,12 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 
 	// ストアからエントリを読み込み
 	view.entries = view.store.GetAll()
-	view.filteredEntries = slices.Clone(view.entries)
+	view.selectedGroup = totpstore.ResolveSelection(view.store.GetGroups(), a.preferences.GetSelectedGroup())
+	view.filteredEntries = totpstore.FilterByGroup(view.entries, view.store.GetGroups(), view.selectedGroup)
+
+	// グループ選択ボタンを作成
+	view.groupButton = widget.NewButtonWithIcon(view.groupButtonLabel(view.selectedGroup), theme.MenuDropDownIcon(), view.showGroupMenu)
+	view.groupButton.IconPlacement = widget.ButtonIconTrailingText
 
 	// 検索エントリを作成
 	view.searchEntry = components.NewSearchEntry(lang.L("totp.search.placeholder"))
@@ -68,7 +74,7 @@ func (a *App) createTOTPListTab() fyne.CanvasObject {
 
 	// コンテナを作成
 	listStack := container.NewStack(view.list, view.emptyLabel)
-	view.container = container.NewBorder(view.searchEntry, nil, nil, nil, listStack)
+	view.container = container.NewBorder(container.NewBorder(nil, nil, view.groupButton, nil, view.searchEntry), nil, nil, nil, listStack)
 	view.updateEmptyState()
 
 	// 定期更新を開始
@@ -89,6 +95,8 @@ type totpListTab struct {
 	entries         []*totpstore.Entry
 	filteredEntries []*totpstore.Entry
 	searchEntry     *components.SearchEntry
+	groupButton     *widget.Button
+	selectedGroup   string
 	emptyLabel      *widget.Label
 	ticker          *time.Ticker
 	stopChan        chan bool
@@ -100,8 +108,10 @@ func (t *totpListTab) updateEmptyState() {
 	if len(t.filteredEntries) == 0 {
 		if t.isSearching() {
 			t.emptyLabel.SetText(lang.L("totp.search.empty"))
-		} else {
+		} else if len(t.entries) == 0 {
 			t.emptyLabel.SetText(lang.L("totp.empty"))
+		} else {
+			t.emptyLabel.SetText(lang.L("totp.group.empty"))
 		}
 		t.list.Hide()
 		t.emptyLabel.Show()
@@ -136,7 +146,7 @@ func (t *totpListTab) isSearching() bool {
 
 // filterEntries は検索クエリに基づいてエントリをフィルタリングする
 func (t *totpListTab) filterEntries(query string) {
-	t.filteredEntries = slices.Clone(t.entries)
+	t.filteredEntries = totpstore.FilterByGroup(t.entries, t.store.GetGroups(), t.selectedGroup)
 	if query != "" {
 		q := strings.ToLower(query)
 		t.filteredEntries = slices.DeleteFunc(t.filteredEntries, func(entry *totpstore.Entry) bool {
@@ -163,6 +173,8 @@ func (t *totpListTab) filterEntries(query string) {
 // refreshEntries はエントリリストを更新する
 func (t *totpListTab) refreshEntries() {
 	t.entries = t.store.GetAll()
+	t.selectedGroup = totpstore.ResolveSelection(t.store.GetGroups(), t.selectedGroup)
+	t.updateGroupButton()
 	t.filterEntries(t.searchEntry.Text)
 }
 
@@ -215,6 +227,7 @@ func (t *totpListTab) scanQRCode() {
 
 // showAddConfirmDialog は追加確認ダイアログを表示する
 func (t *totpListTab) showAddConfirmDialog(entry *totpstore.Entry) {
+	entry.GroupID = t.defaultGroupID()
 	t.showEntryFormDialog(
 		entry,
 		lang.L("totp.add.title"),
@@ -242,7 +255,9 @@ func (t *totpListTab) showBatchAddConfirmDialog(results []qrscanner.ScanResult) 
 			if !confirmed {
 				return
 			}
+			groupID := t.defaultGroupID()
 			for _, r := range results {
+				r.Entry.GroupID = groupID
 				if err := t.store.Add(r.Entry); err != nil {
 					dialog.ShowError(err, t.app.mainWindow)
 					return
@@ -275,6 +290,37 @@ func (t *totpListTab) showEntryFormDialog(
 	accountEntry := widget.NewEntry()
 	accountEntry.SetText(entry.Account)
 
+	// グループ選択（ラベル→IDの対応表を作る）
+	// widget.Select は文字列で選択を管理するため、同名のグループや「未分類」と同名のグループがあっても
+	// 区別できるよう、重複するラベルには連番を付けて一意にする（すべてのグループを必ず含める）
+	ungroupedLabel := lang.L("totp.group.ungrouped")
+	groupIDs := map[string]string{ungroupedLabel: ""}
+	groups := t.store.GetGroups()
+	groupOptions := make([]string, 1, 1+len(groups))
+	groupOptions[0] = ungroupedLabel
+	initialGroupLabel := ungroupedLabel
+	currentGroupID := t.realGroupID(entry.GroupID)
+	for _, g := range groups {
+		label := g.Name
+		for n := 2; ; n++ {
+			if _, dup := groupIDs[label]; !dup {
+				break
+			}
+			label = fmt.Sprintf("%s (%d)", g.Name, n)
+		}
+		groupIDs[label] = g.ID
+		groupOptions = append(groupOptions, label)
+		if g.ID == currentGroupID {
+			initialGroupLabel = label
+		}
+	}
+	groupSelect := widget.NewSelect(groupOptions, nil)
+	groupSelect.SetSelected(initialGroupLabel)
+
+	// 保存済みエントリなら編集、そうでなければ追加として扱う
+	_, getErr := t.store.Get(entry.ID)
+	isEdit := getErr == nil
+
 	form := dialog.NewForm(
 		title,
 		confirmLabel,
@@ -282,6 +328,7 @@ func (t *totpListTab) showEntryFormDialog(
 		[]*widget.FormItem{
 			widget.NewFormItem(lang.L("totp.edit.issuer"), issuerEntry),
 			widget.NewFormItem(lang.L("totp.edit.account"), accountEntry),
+			widget.NewFormItem(lang.L("totp.edit.group"), groupSelect),
 		},
 		func(confirmed bool) {
 			if !confirmed {
@@ -289,9 +336,20 @@ func (t *totpListTab) showEntryFormDialog(
 			}
 			entry.Issuer = issuerEntry.Text
 			entry.Account = accountEntry.Text
+			selectedGroupID := groupIDs[groupSelect.Selected]
+			if !isEdit {
+				entry.GroupID = selectedGroupID
+			}
 			if err := onSave(entry); err != nil {
 				dialog.ShowError(err, t.app.mainWindow)
 				return
+			}
+			// 編集でグループが変わった場合は移動先の末尾に移す
+			if isEdit && selectedGroupID != currentGroupID {
+				if err := t.store.MoveEntryToGroup(entry.ID, selectedGroupID); err != nil {
+					dialog.ShowError(err, t.app.mainWindow)
+					return
+				}
 			}
 			if err := t.store.Save(); err != nil {
 				dialog.ShowError(err, t.app.mainWindow)
@@ -301,6 +359,6 @@ func (t *totpListTab) showEntryFormDialog(
 		},
 		t.app.mainWindow,
 	)
-	form.Resize(fyne.NewSize(400, 200))
+	form.Resize(fyne.NewSize(400, 250))
 	form.Show()
 }
