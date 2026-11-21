@@ -3,9 +3,7 @@ package ui
 import (
 	"errors"
 	"fmt"
-	"slices"
 	"strconv"
-	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -25,20 +23,6 @@ func groupNameError(err error) error {
 		return errors.New(lang.L("totp.group.error.duplicate"))
 	}
 	return err
-}
-
-// checkReservedGroupName は予約された名前（すべて/未分類）かを検査する
-func checkReservedGroupName(name string) error {
-	trimmed := strings.TrimSpace(name)
-	// 現在の表示言語に加え、他言語の表記（日本語・英語）も予約名として扱う
-	reserved := []string{
-		lang.L("totp.group.all"), lang.L("totp.group.ungrouped"),
-		"すべて", "未分類", "All", "Ungrouped",
-	}
-	if slices.Contains(reserved, trimmed) {
-		return errors.New(lang.L("totp.group.error.reserved"))
-	}
-	return nil
 }
 
 // showGroupManageDialog はグループ管理ダイアログを表示する
@@ -77,10 +61,6 @@ func (t *totpListTab) showGroupManageDialog() {
 			[]*widget.FormItem{widget.NewFormItem(lang.L("totp.group.name"), nameEntry)},
 			func(confirmed bool) {
 				if !confirmed {
-					return
-				}
-				if err := checkReservedGroupName(nameEntry.Text); err != nil {
-					dialog.ShowError(err, win)
 					return
 				}
 				commit(t.store.RenameGroup(g.ID, nameEntry.Text))
@@ -132,10 +112,6 @@ func (t *totpListTab) showGroupManageDialog() {
 	newEntry := widget.NewEntry()
 	newEntry.SetPlaceHolder(lang.L("totp.group.new.placeholder"))
 	create := func() {
-		if err := checkReservedGroupName(newEntry.Text); err != nil {
-			dialog.ShowError(err, win)
-			return
-		}
 		_, err := t.store.AddGroup(newEntry.Text)
 		if err == nil {
 			newEntry.SetText("")

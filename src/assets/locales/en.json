@@ -23,7 +23,6 @@
     "totp.group.delete.message": "Delete group \"{{.Name}}\"?\n{{.Count}} entries in it will be moved to \"Ungrouped\".",
     "totp.group.error.empty": "Please enter a group name",
     "totp.group.error.duplicate": "A group with the same name already exists",
-    "totp.group.error.reserved": "This name cannot be used",
     "totp.copied.title": "Copied",
     "totp.copied.message": "Code copied to clipboard",
     "totp.menu.moveup": "Move Up",

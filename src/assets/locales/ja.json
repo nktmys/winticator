@@ -23,7 +23,6 @@
     "totp.group.delete.message": "グループ「{{.Name}}」を削除しますか？\n中の{{.Count}}件のエントリは「未分類」に移動します。",
     "totp.group.error.empty": "グループ名を入力してください",
     "totp.group.error.duplicate": "同じ名前のグループがすでにあります",
-    "totp.group.error.reserved": "この名前は使用できません",
     "totp.copied.title": "コピー完了",
     "totp.copied.message": "コードをコピーしました",
     "totp.menu.moveup": "上へ移動",
