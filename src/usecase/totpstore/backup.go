@@ -53,6 +53,12 @@ func ParseBackup(data []byte) (*Backup, error) {
 	if err := json.Unmarshal(trimmed, &b); err != nil {
 		return nil, err
 	}
+	switch {
+	case b.Version > backupVersion:
+		return nil, ErrUnsupportedBackupVersion
+	case b.Version < backupVersion:
+		return nil, ErrInvalidBackup
+	}
 	return &b, nil
 }
 

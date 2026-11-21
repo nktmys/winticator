@@ -40,4 +40,10 @@ var (
 
 	// ErrGroupNameDuplicate はグループ名が重複している場合のエラー
 	ErrGroupNameDuplicate = errors.New("group name already exists")
+
+	// ErrInvalidBackup はバックアップの形式が不正な場合のエラー
+	ErrInvalidBackup = errors.New("invalid backup format")
+
+	// ErrUnsupportedBackupVersion はバックアップのバージョンに対応していない場合のエラー
+	ErrUnsupportedBackupVersion = errors.New("unsupported backup version")
 )

@@ -66,6 +66,7 @@
     "settings.import.password": "復号パスワードを入力",
     "settings.import.success": "データをインポートしました",
     "settings.import.merge": "既存データとマージしますか？",
+    "settings.import.unsupported": "このバックアップは新しいバージョンのWinticatorで作成されています。アプリを更新してから読み込んでください。",
     "appinfo.title": "アプリ情報",
     "appinfo.close": "閉じる",
     "appinfo.name": "名称:",

@@ -124,6 +124,20 @@ func TestStore_ImportBackup_MergeSameBackupTwice_UniqueIDs(t *testing.T) {
 	assert.Empty(t, remaining[0].GroupID)
 }
 
+func TestParseBackup_Version(t *testing.T) {
+	_, err := ParseBackup([]byte(`{"version":2,"groups":[],"entries":[]}`))
+	require.NoError(t, err)
+
+	_, err = ParseBackup([]byte(`{"version":3,"groups":[],"entries":[]}`))
+	require.ErrorIs(t, err, ErrUnsupportedBackupVersion)
+
+	_, err = ParseBackup([]byte(`{"groups":[],"entries":[]}`))
+	require.ErrorIs(t, err, ErrInvalidBackup)
+
+	_, err = ParseBackup([]byte(`{"version":1,"entries":[]}`))
+	require.ErrorIs(t, err, ErrInvalidBackup)
+}
+
 func TestStore_ImportBackup_MergeByName(t *testing.T) {
 	s := newBackupTestStore()
 	local, err := s.AddGroup("仕事")

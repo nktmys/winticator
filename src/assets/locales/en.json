@@ -66,6 +66,7 @@
     "settings.import.password": "Enter password for decryption",
     "settings.import.success": "Data imported successfully",
     "settings.import.merge": "Merge with existing data?",
+    "settings.import.unsupported": "This backup was created by a newer version of Winticator. Please update the app and try again.",
     "appinfo.title": "App Info",
     "appinfo.close": "Close",
     "appinfo.name": "Name:",

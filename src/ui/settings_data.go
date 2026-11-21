@@ -2,6 +2,7 @@ package ui
 
 import (
 	"encoding/base64"
+	"errors"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
@@ -167,6 +168,9 @@ func (t *settingsTab) doImport(data []byte, password string) {
 	// バックアップをパース（旧形式も受け付ける）
 	backup, err := totpstore.ParseBackup(decrypted)
 	if err != nil {
+		if errors.Is(err, totpstore.ErrUnsupportedBackupVersion) {
+			err = errors.New(lang.L("settings.import.unsupported"))
+		}
 		dialog.ShowError(err, t.app.mainWindow)
 		return
 	}
